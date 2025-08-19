@@ -1,18 +1,25 @@
-import { GameScene } from "../../core/scene";
-import Sprite from "../../core/sprite";
+import createScene, { Scene } from "../../core/scene";
+import createSprite from "../../core/sprite";
 
-export class IntroScene extends GameScene {
-  _ticks: number = 0;
+export default () => {
+  var _ticks = 0;
 
-  constructor() {
-    super(new Sprite(0, [300, 200], [2, 2]));
-    this._rootSprite._addChild(
-      new Sprite(0, [20, 20], [2, 2])
-    );
+  const introScene = createScene((_, __, delta) => {
+    _ticks += delta;
+  });
+
+  const anchorSprite = createSprite(2, [300, 200]);
+
+  for (let i = 0; i < 1000; i++) {
+    const childSprite = createSprite(0, [100, 0]);
+    childSprite._setUpdater((sprite, gameState, delta) => {
+      sprite._position[0] = Math.sin((_ticks) + i + 12) * 100;
+      sprite._position[1] = Math.cos((_ticks) + i + 12) * 100;
+      sprite._angle = (_ticks + i) * 0.01;
+    });
+    anchorSprite._addChild(childSprite);
   }
 
-  override _update(gameState: Object, delta: number) {
-    this._rootSprite._angle += delta * 0.1;
-    this._ticks += delta;
-  }
+  introScene._rootSprite._addChild(anchorSprite);
+  return introScene;
 }

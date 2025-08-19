@@ -1,4 +1,4 @@
 import { Game } from "../core/game";
-import { IntroScene } from "./scenes/intro";
+import createIntroScene from "./scenes/intro";
 
-const game = new Game(new IntroScene());
+const game = new Game(createIntroScene());

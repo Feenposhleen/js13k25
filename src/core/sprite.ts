@@ -1,44 +1,57 @@
 import { Vec } from "./utils";
 
-export class Sprite {
+export type SpriteUpdater = (sprite: Sprite, gameState: Object, delta: number) => void;
+
+export type Sprite = {
   _texture: number;
   _position: Vec;
   _scale: Vec;
   _angle: number;
-  _opacity: number = 1;
+  _opacity: number;
   _z: number;
   _children: Sprite[];
+  _update: (gameState: Object, dt: number) => void;
+  _setUpdater: (updater: SpriteUpdater) => void;
+  _addChild: (sprite: Sprite) => void;
+  _removeChild: (sprite: Sprite) => void;
+};
 
-  constructor(
-    _texture: number,
-    _position: Vec,
-    _scale: Vec = [1, 1],
-    _opacity: number = 1,
-    _angle: number = 0,
-    _z: number = 0,
-  ) {
-    this._texture = _texture;
-    this._position = _position;
-    this._scale = _scale;
-    this._angle = _angle;
-    this._opacity = _opacity;
-    this._z = _z;
-    this._children = [];
+const createSprite = (
+  texture: number,
+  position: Vec,
+  scale: Vec = [1, 1],
+  opacity: number = 1,
+  angle: number = 0,
+  z: number = 0,
+): Sprite => {
+  let _updater: SpriteUpdater = (sprite, gameState, delta) => { };
+
+  const _sprite = {
+    _texture: texture,
+    _position: position,
+    _scale: scale,
+    _angle: angle,
+    _opacity: opacity,
+    _z: z,
+    _children: [] as Sprite[],
+
+    _addChild: (sprite: Sprite): void => {
+      _sprite._children.push(sprite);
+    },
+
+    _removeChild: (sprite: Sprite): void => {
+      const index = _sprite._children.indexOf(sprite);
+      if (index !== -1) {
+        _sprite._children.splice(index, 1);
+      }
+    },
+
+    _setUpdater: (updater: SpriteUpdater) => _updater = updater,
+
+    _update: (gameState: Object, dt: number): void => _updater(_sprite, gameState, dt),
   }
 
-  _addChild(sprite: Sprite): void {
-    this._children.push(sprite);
-  }
+  return _sprite;
+};
 
-  _removeChild(sprite: Sprite): void {
-    const index = this._children.indexOf(sprite);
-    if (index !== -1) {
-      this._children.splice(index, 1);
-    }
-  }
-
-  // override me
-  _update(dt: number): void { }
-}
-
-export default Sprite;
+export default createSprite;

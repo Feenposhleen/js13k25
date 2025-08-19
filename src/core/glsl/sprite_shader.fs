@@ -8,5 +8,4 @@ out vec4 fragColor;
 
 void main(){
   fragColor=texture(uTexArray, vec3(vUV, float(vLayer)));
-  //fragColor=vec4(1.0, 1.0, 1.0, 1.0); // Red color for testing
 }

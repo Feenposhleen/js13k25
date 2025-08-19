@@ -1,70 +1,69 @@
 import { TransferDataFromWindow } from "./game_window";
 import { Renderer } from "./renderer";
-import { GameScene } from "./scene";
+import { Scene } from "./scene";
 
 export type TransferDataFromWorker = {
   renderArray: Float32Array;
 }
 
-class GameWorker {
-  private _sceneTree: GameScene[] = [];
-  private _sceneRemoveList = new Set<GameScene>();
-  private _dataFromWindow: TransferDataFromWindow = { keys: {}, pointer: null };
-  private _lastTs: number = 0;
+const createGameWorker = () => {
+  const _sceneRemoveList = new Set<Scene>();
+  var _sceneTree: Scene[] = [];
+  var _dataFromWindow: TransferDataFromWindow = { keys: {}, pointer: null };
+  var _lastTs: number = 0;
 
-  constructor() {
-    self.onmessage = this._handleMessage.bind(this);
-  }
+  self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
+    _dataFromWindow = data;
+    _updateGame();
+  };
 
-  private _handleMessage({ data }: { data: TransferDataFromWindow }) {
-    this._dataFromWindow = data;
-    this._updateGame();
-  }
-
-  private _updateWindow(renderData: Float32Array) {
+  const _updateWindow = (renderData: Float32Array) => {
     const data: TransferDataFromWorker = { renderArray: renderData };
     (self as any).postMessage(data, [renderData.buffer]);
-  }
+  };
 
-  public async _initialize(initialScene: GameScene) {
-    this._pushScene(initialScene);
-  }
-
-  public async _pushScene(scene: GameScene) {
-    this._sceneTree.push(scene);
-  }
-
-  public async _popScene() {
-    if (this._sceneTree.length > 1) this._sceneTree.pop();
-  }
-
-  public async _removeScene(scene: GameScene) {
-    this._sceneTree = this._sceneTree.filter((existingScene) => existingScene !== scene);
-  }
-
-  public async _updateGame() {
+  const _updateGame = async () => {
     const now = performance.now();
-    const delta = (now - this._lastTs) / 1000;
-    this._lastTs = now;
+    const delta = (now - _lastTs) / 1000;
+    _lastTs = now;
 
-    if (!this._sceneTree.length) return;
+    if (!_sceneTree.length) return;
 
-    for (const scene of this._sceneTree) {
+    for (const scene of _sceneTree) {
       if (!scene._paused) {
-        scene._update(this._dataFromWindow, delta);
+        scene._update(_dataFromWindow, delta);
       }
 
-      if (scene._done) { this._sceneRemoveList.add(scene); }
+      if (scene._done) { _sceneRemoveList.add(scene); }
     }
 
     const rootSprites = [];
-    for (const scene of this._sceneTree) {
+    for (const scene of _sceneTree) {
       rootSprites.push(scene._rootSprite);
     }
 
     const renderData = Renderer._buildRenderData(rootSprites);
-    this._updateWindow(renderData);
-  }
+    _updateWindow(renderData);
+  };
+
+  const _ = {
+    _initialize(initialScene: Scene) {
+      _._pushScene(initialScene);
+    },
+    _pushScene(scene: Scene) {
+      _sceneTree.push(scene);
+    },
+    _popScene() {
+      if (_sceneTree.length > 1) _sceneTree.pop();
+    },
+    _removeScene(scene: Scene) {
+      _sceneTree = _sceneTree.filter((existingScene) => existingScene !== scene);
+    },
+  };
+
+  return _;
 }
 
-export default GameWorker;
+export default createGameWorker;
+
+export type GameWorker = ReturnType<typeof createGameWorker>;

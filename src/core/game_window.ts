@@ -1,6 +1,6 @@
 import AssetLibrary from "./asset_library";
 import { TransferDataFromWorker } from "./game_worker";
-import { Renderer } from "./renderer";
+import createRenderer, { Renderer } from "./renderer";
 import { Vec } from "./utils";
 
 export type TransferDataFromWindow = {
@@ -8,67 +8,65 @@ export type TransferDataFromWindow = {
   pointer: Vec | null;
 }
 
-class GameWindow {
-  private _canvas: HTMLCanvasElement;
-  private _jsUrl: string;
-  private _worker: any;
-  private _pixelMultiplier: number = 1;
-  private _renderer: Renderer | null = null;
-  private _pendingFrame: Float32Array | null = null;
-  private _transferData: TransferDataFromWindow = { keys: {}, pointer: null };
+const createGameWindow = () => {
+  const _canvas = document.querySelector('#c') as HTMLCanvasElement;
+  const scriptContent = (document.querySelector('#j') as any).innerHTML;
+  const _jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
+  const _worker: any = new Worker(_jsUrl);
+  let _pixelMultiplier = 1;
+  let _renderer: Renderer | null = null;
+  let _pendingFrame: Float32Array | null = null;
+  let _transferData: TransferDataFromWindow = { keys: {}, pointer: null };
 
-  constructor() {
-    this._canvas = document.querySelector('#c') as HTMLCanvasElement;
+  const _requestNewFrame = () => {
+    _worker.postMessage(_transferData);
+    _transferData = { keys: {}, pointer: null };
+  };
 
-    // Set up the worker
-    const scriptContent = (document.querySelector('#j') as any).innerHTML;
-    this._jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
-    this._worker = new Worker(this._jsUrl);
-    this._worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
-      this._receiveFrame(ev.data);
-    };
+  const _receiveFrame = (data: TransferDataFromWorker) => {
+    _pendingFrame = data.renderArray;
+  };
 
-    this._wireInput();
-  }
-
-  private _requestNewFrame() {
-    this._worker.postMessage(this._transferData);
-    this._transferData = { keys: {}, pointer: null }; // Reset after sending
-  }
-
-  private _receiveFrame(data: TransferDataFromWorker) {
-    this._pendingFrame = data.renderArray;
-  }
-
-  private _wireInput() {
+  const _wireInput = () => {
     window.onpointerdown = (ev: any) => {
-      this._transferData.pointer = [
-        ev.clientX / this._pixelMultiplier,
-        ev.clientY / this._pixelMultiplier,
+      _transferData.pointer = [
+        ev.clientX / _pixelMultiplier,
+        ev.clientY / _pixelMultiplier,
       ];
     };
 
     window.addEventListener('keydown', (ev) => {
-      this._transferData.keys[ev.key] = true;
+      _transferData.keys[ev.key] = true;
     });
   };
 
-  private _renderLoop() {
-    if (this._pendingFrame) {
-      this._requestNewFrame();
-      this._renderer!._draw(this._pendingFrame);
-      this._pendingFrame = null;
+  const _renderLoop = () => {
+    if (_pendingFrame) {
+      _requestNewFrame();
+      _renderer!._draw(_pendingFrame);
+      _pendingFrame = null;
     }
+    requestAnimationFrame(_renderLoop);
+  };
 
-    requestAnimationFrame(() => this._renderLoop());
-  }
+  // wire up worker -> frame receiver
+  _worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
+    _receiveFrame(ev.data);
+  };
 
-  public async _start(): Promise<void> {
-    await AssetLibrary._preRenderTextures();
-    this._renderer = new Renderer(this._canvas);
-    this._requestNewFrame();
-    this._renderLoop();
+  // start input wiring immediately
+  _wireInput();
+
+  return {
+    async _start(): Promise<void> {
+      await AssetLibrary._preRenderTextures();
+      _renderer = createRenderer(_canvas);
+      _requestNewFrame();
+      _renderLoop();
+    }
   }
 }
 
-export default GameWindow;
+export type GameWindow = ReturnType<typeof createGameWindow>;
+
+export default createGameWindow;
