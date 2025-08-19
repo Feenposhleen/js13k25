@@ -1,5 +1,5 @@
 import { TransferDataFromWindow } from "./game_window";
-import { Renderer } from "./renderer";
+import { _buildRenderData, Renderer } from "./renderer";
 import { Scene } from "./scene";
 
 export type TransferDataFromWorker = {
@@ -42,7 +42,7 @@ const createGameWorker = () => {
       rootSprites.push(scene._rootSprite);
     }
 
-    const renderData = Renderer._buildRenderData(rootSprites);
+    const renderData = _buildRenderData(rootSprites);
     _updateWindow(renderData);
   };
 

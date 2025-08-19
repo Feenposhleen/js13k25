@@ -65,7 +65,6 @@ module.exports = (cli) => {
       typescript({ tsconfig: "./tsconfig.json" }),
 
       glslify({
-        // Default
         include: [
           '**/*.vs',
           '**/*.fs',
@@ -73,16 +72,7 @@ module.exports = (cli) => {
           '**/*.frag',
           '**/*.glsl'
         ],
-
-        // Undefined by default
         exclude: 'node_modules/**',
-
-        // Enabled by default
-        compress: true
-
-        // The compress option also accepts a function with its first argument
-        // being the string containing the glslified shader code.
-        // The function is expected to return a string (or object) - the compressed shader
       }),
 
       // Production-only minification (keep builds fast in dev)

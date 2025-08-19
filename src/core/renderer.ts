@@ -1,5 +1,9 @@
 import spriteVS_src from './glsl/sprite_shader.vs';
 import spriteFS_src from './glsl/sprite_shader.fs';
+import fsQuadVs from './glsl/full_screen_quad.vs';
+import postGrayscaleFs from './glsl/post_grayscale.fs';
+import postNoopFs from './glsl/post_noop.fs';
+
 import Utils from './utils';
 import { Sprite } from './sprite';
 import AssetLibrary from './asset_library';
@@ -24,19 +28,17 @@ export const _buildRenderData = (sprites: Sprite[]) => {
     let local = Utils._mat3FromTRS(x, y, angle, sx, sy);
     const world = parentMat ? Utils._mat3Multiply(new Float32Array(9), parentMat, local) : local;
 
-    const texHalf = 50; // textures are 100x100
-    const texScale = new Float32Array([
-      texHalf, 0, 0,
-      0, texHalf, 0,
-      0, 0, 1
-    ]);
-    const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
+    // TODO: Replace with global sprite size / 2
+    const texHalf = 50;
+    const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
 
-    // pixel -> clip (hardcoded viewport used here as in original)
+    const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
     const pxToClip = new Float32Array([2 / 600, 0, 0, 0, -2 / 400, 0, -1, 1, 1]);
     const clipMat = Utils._mat3Multiply(new Float32Array(9), pxToClip, worldWithTex);
 
-    flat.push({ mat: clipMat, z, layer: sprite._texture });
+    if (sprite._texture !== null) {
+      flat.push({ mat: clipMat, z, layer: sprite._texture });
+    }
 
     if (sprite._children) for (const c of sprite._children) walk(c, world);
   };
@@ -55,75 +57,95 @@ export const _buildRenderData = (sprites: Sprite[]) => {
   return data;
 };
 
-// Keep a named export compatible with existing imports that expect Renderer._buildRenderData
-export const Renderer = { _buildRenderData };
-
-// Closure creator (in the same style as createGameWorker)
 export const createRenderer = (canvas: HTMLCanvasElement) => {
   const gl = canvas.getContext("webgl2") as WebGL2RenderingContext | null;
   if (!gl) throw new Error("WebGL2 required");
+
+  // WebGL context methods for minification
+  const attachShader = gl.attachShader.bind(gl);
+  const createBuffer = gl.createBuffer.bind(gl);
+  const bindBuffer = gl.bindBuffer.bind(gl);
+  const bufferData = gl.bufferData.bind(gl);
+  const createFramebuffer = gl.createFramebuffer.bind(gl);
+  const bindFramebuffer = gl.bindFramebuffer.bind(gl);
+  const createTexture = gl.createTexture.bind(gl);
+  const bindTexture = gl.bindTexture.bind(gl);
+  const texParameteri = gl.texParameteri.bind(gl);
+  const texSubImage3D = gl.texSubImage3D.bind(gl);
+  const getUniformLocation = gl.getUniformLocation.bind(gl);
+  const useProgram = gl.useProgram.bind(gl);
+  const uniform1i = gl.uniform1i.bind(gl);
+  const getAttribLocation = gl.getAttribLocation.bind(gl);
+  const activeTexture = gl.activeTexture.bind(gl);
+  const texImage3D = gl.texImage3D.bind(gl);
+  const viewport = gl.viewport.bind(gl);
+
+  const TEXTURE_2D = gl.TEXTURE_2D;
+  const TEXTURE_2D_ARRAY = gl.TEXTURE_2D_ARRAY;
+  const TEXTURE_MAG_FILTER = gl.TEXTURE_MAG_FILTER;
+  const TEXTURE_MIN_FILTER = gl.TEXTURE_MIN_FILTER;
+  const FLOAT = gl.FLOAT;
+  const FRAMEBUFFER = gl.FRAMEBUFFER;
+  const UNSIGNED_BYTE = gl.UNSIGNED_BYTE;
+  const RGBA = gl.RGBA;
+  const NEAREST = gl.NEAREST;
+  const CLAMP_TO_EDGE = gl.CLAMP_TO_EDGE;
+  const ARRAY_BUFFER = gl.ARRAY_BUFFER;
+  const TRIANGLE_STRIP = gl.TRIANGLE_STRIP;
 
   // small GL helpers (inner so they can capture `gl`)
   const _compileShader = (type: number, src: string) => {
     const sh = gl.createShader(type)!;
     gl.shaderSource(sh, src);
     gl.compileShader(sh);
-    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) || 'shader compile failed');
+    //if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) || 'shader compile failed');
     return sh;
   };
 
   const _createProgram = (vs: string, fs: string) => {
     const p = gl.createProgram()!;
-    gl.attachShader(p, _compileShader(gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, _compileShader(gl.FRAGMENT_SHADER, fs));
+    attachShader(p, _compileShader(gl.VERTEX_SHADER, vs));
+    attachShader(p, _compileShader(gl.FRAGMENT_SHADER, fs));
     gl.linkProgram(p);
-    const progLog = gl.getProgramInfoLog(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(progLog || undefined);
+    //const progLog = gl.getProgramInfoLog(p);
+    //if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(progLog || undefined);
     return p;
   };
-
-  const _fsQuadVS = () => `#version 300 es
-const vec2 POS[4]=vec2[4](vec2(-1,-1),vec2(1,-1),vec2(-1,1),vec2(1,1));
-out vec2 vUV; void main(){ vec2 p = POS[gl_VertexID]; vUV=(p+1.)*.5; gl_Position=vec4(p,0,1);} `;
-
-  const _grayscaleFS = () => `#version 300 es
-precision mediump float; in vec2 vUV; uniform sampler2D uTexture; out vec4 fragColor; void main(){ vec4 c=texture(uTexture,vUV); float g=dot(c.rgb,vec3(.299,.587,.114)); fragColor=vec4(vec3(g),c.a);} `;
 
   const _instAttrib = (loc: number, size: number, offset: number) => {
     if (loc < 0) return;
     gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, size, gl.FLOAT, false, BYTES_PER_INSTANCE, offset);
+    gl.vertexAttribPointer(loc, size, FLOAT, false, BYTES_PER_INSTANCE, offset);
     gl.vertexAttribDivisor(loc, 1);
   };
 
   const _createRenderTarget = (w: number, h: number): RenderTarget => {
-    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    const fb = createFramebuffer(); bindFramebuffer(FRAMEBUFFER, fb);
+    const tex = createTexture(); bindTexture(TEXTURE_2D, tex);
+    gl.texImage2D(TEXTURE_2D, 0, RGBA, w, h, 0, RGBA, UNSIGNED_BYTE, null);
+    texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
+    texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
+    gl.framebufferTexture2D(FRAMEBUFFER, gl.COLOR_ATTACHMENT0, TEXTURE_2D, tex, 0);
     return { fb, tex, width: w, height: h };
   };
 
   // instance state
   const spriteProgram = _createProgram(spriteVS_src, spriteFS_src);
-  gl.useProgram(spriteProgram);
+  useProgram(spriteProgram);
+  uniform1i(getUniformLocation(spriteProgram, "uTexArray"), 0);
 
-  gl.uniform1i(gl.getUniformLocation(spriteProgram, "uTexArray"), 0);
+  const instanceBuffer = createBuffer();
+  bindBuffer(ARRAY_BUFFER, instanceBuffer);
 
-  const instanceBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-
-  const locTransform = gl.getAttribLocation(spriteProgram, "aTransform");
+  const locTransform = getAttribLocation(spriteProgram, "aTransform");
   _instAttrib(locTransform, 3, 0);
   _instAttrib(locTransform + 1, 3, 12);
   _instAttrib(locTransform + 2, 3, 24);
-  const locLayer = gl.getAttribLocation(spriteProgram, "aLayer");
+
+  const locLayer = getAttribLocation(spriteProgram, "aLayer");
   _instAttrib(locLayer, 1, 36);
 
-  const fsQuadVS = _fsQuadVS();
-  const postPrograms: WebGLProgram[] = [_createProgram(fsQuadVS, _grayscaleFS())];
+  const postPrograms: WebGLProgram[] = [_createProgram(fsQuadVs, postNoopFs)];
 
   let targetA: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
   let targetB: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
@@ -135,21 +157,20 @@ precision mediump float; in vec2 vUV; uniform sampler2D uTexture; out vec4 fragC
     const images = [...AssetLibrary._textureCache.values()];
     if (!images.length) return null;
 
-    const w = images[0].width,
-      h = images[0].height,
-      layers = images.length;
+    // TODO: Replace with global sprite size
+    const w = 100, h = 100, layers = images.length;
 
-    const tex = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage3D(gl.TEXTURE_2D_ARRAY, 0, gl.RGBA, w, h, layers, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    const tex = createTexture();
+    activeTexture(gl.TEXTURE0);
+    bindTexture(TEXTURE_2D_ARRAY, tex);
+    texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MIN_FILTER, NEAREST);
+    texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MAG_FILTER, NEAREST);
+    texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, CLAMP_TO_EDGE);
+    texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, CLAMP_TO_EDGE);
+    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, w, h, layers, 0, RGBA, UNSIGNED_BYTE, null);
 
     for (let i = 0; i < layers; i++) {
-      gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, w, h, 1, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
+      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, w, h, 1, RGBA, UNSIGNED_BYTE, images[i]);
     }
 
     return { tex, width: w, height: h, layers };
@@ -159,14 +180,14 @@ precision mediump float; in vec2 vUV; uniform sampler2D uTexture; out vec4 fragC
     let readTex = srcTex, write = targetB!;
     for (let i = 0; i < postPrograms.length; i++) {
       const prog = postPrograms[i];
-      gl.useProgram(prog);
-      gl.uniform1i(gl.getUniformLocation(prog, "uTexture"), 0);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, readTex);
+      useProgram(prog);
+      uniform1i(getUniformLocation(prog, "uTexture"), 0);
+      activeTexture(gl.TEXTURE0);
+      bindTexture(TEXTURE_2D, readTex);
       const isLast = (i === postPrograms.length - 1);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, isLast ? null : write.fb);
-      gl.viewport(0, 0, width, height);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      bindFramebuffer(FRAMEBUFFER, isLast ? null : write.fb);
+      viewport(0, 0, width, height);
+      gl.drawArrays(TRIANGLE_STRIP, 0, 4);
       readTex = write.tex;
       write = (write === targetA) ? targetB! : targetA!;
     }
@@ -176,18 +197,18 @@ precision mediump float; in vec2 vUV; uniform sampler2D uTexture; out vec4 fragC
   loadTextureArray();
 
   const _draw = (drawData: Float32Array) => {
-    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, drawData, gl.DYNAMIC_DRAW);
-    gl.useProgram(spriteProgram);
+    bindBuffer(ARRAY_BUFFER, instanceBuffer);
+    bufferData(ARRAY_BUFFER, drawData, gl.DYNAMIC_DRAW);
+    useProgram(spriteProgram);
 
-    if (!targetA) throw new Error('render targets not created');
-    gl.bindFramebuffer(gl.FRAMEBUFFER, targetA.fb);
-    gl.viewport(0, 0, targetA.width, targetA.height);
+    //if (!targetA) throw new Error('render targets not created');
+    bindFramebuffer(FRAMEBUFFER, targetA.fb);
+    viewport(0, 0, targetA.width, targetA.height);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     const instanceCount = drawData.length / FLOATS_PER_INSTANCE;
-    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, instanceCount);
+    gl.drawArraysInstanced(TRIANGLE_STRIP, 0, 4, instanceCount);
 
     runPostChain(targetA.tex, targetA.width, targetA.height);
   };

@@ -3,7 +3,7 @@ import { Vec } from "./utils";
 export type SpriteUpdater = (sprite: Sprite, gameState: Object, delta: number) => void;
 
 export type Sprite = {
-  _texture: number;
+  _texture: number | null;
   _position: Vec;
   _scale: Vec;
   _angle: number;
@@ -17,7 +17,7 @@ export type Sprite = {
 };
 
 const createSprite = (
-  texture: number,
+  texture: number | null,
   position: Vec,
   scale: Vec = [1, 1],
   opacity: number = 1,

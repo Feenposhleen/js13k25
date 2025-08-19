@@ -8,7 +8,8 @@ const assetLibrary = {
 
   async _preRenderTextures(): Promise<void> {
     let i = 0;
-    for (const [name, textureData] of Object.entries((drawables as RawDrawableData)._textures)) {
+    for (const textureData of drawables._textures) {
+      const name = drawables._textureNames[i]!;
       this._textureCache.set(
         name,
         await this._preRenderTexture(
@@ -25,25 +26,27 @@ const assetLibrary = {
 
   async _preRenderTexture(
     palette: string[],
-    textureData: number[],
+    textureData: number[][],
   ): Promise<ImageData> {
     // TODO: Replace with global sprite size
     const canvas = new OffscreenCanvas(100, 100);
     const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
 
     for (let i = 0; i < textureData.length; i++) {
-      const color = palette[textureData[0]];
+      const poly = textureData[i];
+      const color = palette[poly[0]];
       const style = textureData[1];
 
-      const firstX = canvas.width * textureData[2];
-      const firstY = canvas.height * textureData[3];
+      const firstX = canvas.width * poly[2];
+      const firstY = canvas.height * poly[3];
 
       ctx.beginPath();
       ctx.moveTo(firstX, firstY);
 
-      for (let j = 4; j < textureData.length; j += 2) {
-        const x = canvas.width * textureData[j];
-        const y = canvas.height * textureData[j + 1];
+      for (let j = 4; j < poly.length; j += 2) {
+        const x = canvas.width * poly[j];
+        const y = canvas.height * poly[j + 1];
         ctx.lineTo(x, y);
       }
 
