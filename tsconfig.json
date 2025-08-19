@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "removeComments": true,
+    "useDefineForClassFields": false,
+    "importsNotUsedAsValues": "remove",
+    "noEmitOnError": true,
+    "isolatedModules": false,
+    "noImplicitOverride": true
+  }
+}
