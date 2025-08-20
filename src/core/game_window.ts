@@ -1,7 +1,8 @@
 import AssetLibrary from "./asset_library";
 import { TransferDataFromWorker } from "./game_worker";
 import createRenderer, { Renderer } from "./renderer";
-import { Vec } from "./utils";
+import createMiniSequencer, { MiniSequencer } from "./sound";
+import utils, { Vec } from "./utils";
 
 export type TransferDataFromWindow = {
   keys: Record<string, boolean>;
@@ -9,14 +10,17 @@ export type TransferDataFromWindow = {
 }
 
 const createGameWindow = () => {
-  const _canvas = document.querySelector('#c') as HTMLCanvasElement;
-  const scriptContent = (document.querySelector('#j') as any).innerHTML;
+  const _canvas = utils.$('#c') as HTMLCanvasElement;
+  const scriptContent = (utils.$('#j') as HTMLScriptElement).innerHTML;
   const _jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
-  const _worker: any = new Worker(_jsUrl);
+  const _worker: Worker = new Worker(_jsUrl);
+  const playButton = utils.$('#p') as HTMLDivElement;
   let _pixelMultiplier = 1;
   let _renderer: Renderer | null = null;
   let _pendingFrame: Float32Array | null = null;
   let _transferData: TransferDataFromWindow = { keys: {}, pointer: null };
+  let _music: MiniSequencer | null = null;
+  let _sfx: MiniSequencer | null = null;
 
   const _requestNewFrame = () => {
     _worker.postMessage(_transferData);
@@ -49,21 +53,32 @@ const createGameWindow = () => {
     requestAnimationFrame(_renderLoop);
   };
 
-  // wire up worker -> frame receiver
+  const _initialize = async (): Promise<void> => {
+    const audioCtx = new window.AudioContext();
+    _music = createMiniSequencer(audioCtx);
+    _sfx = createMiniSequencer(audioCtx);
+
+    await AssetLibrary._preRenderTextures();
+
+    playButton.style.display = 'block';
+    playButton.addEventListener('click', _start);
+  }
+
+  const _start = async (): Promise<void> => {
+    playButton.style.display = 'none';
+    _renderer = createRenderer(_canvas);
+    _requestNewFrame();
+    _renderLoop();
+  };
+
   _worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
     _receiveFrame(ev.data);
   };
 
-  // start input wiring immediately
   _wireInput();
 
   return {
-    async _start(): Promise<void> {
-      await AssetLibrary._preRenderTextures();
-      _renderer = createRenderer(_canvas);
-      _requestNewFrame();
-      _renderLoop();
-    }
+    _initialize,
   }
 }
 

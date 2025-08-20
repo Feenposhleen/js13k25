@@ -3,6 +3,10 @@ export type Vec = [number, number];
 export type Utils = typeof utils;
 
 const utils = {
+  $: (selector: string): HTMLElement | null => {
+    return document.querySelector(selector);
+  },
+
   _rndFloat: (): number => {
     return Math.random();
   },

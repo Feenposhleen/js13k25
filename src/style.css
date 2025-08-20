@@ -12,4 +12,22 @@ body {
   display: block;
   touch-action: none;
   border: 1px solid #ccc;
+  width: 100%;
+}
+
+#p {
+  position: absolute;
+  border: 0.4vh solid #fff;
+  border-radius: 1vh;
+  font-family: monospace;
+  text-transform: uppercase;
+  font-size: 4vh;
+  text-align: center;
+  color: #fff;
+  padding: 2vh 6vh;
+  cursor: pointer;
+}
+
+#p:hover {
+  background-color: #444;
 }
