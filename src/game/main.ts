@@ -1,4 +1,10 @@
 import { Game } from "../core/game";
 import createIntroScene from "./scenes/intro";
 
-const game = new Game(createIntroScene());
+const game = new Game(
+  createIntroScene(),
+  {
+    _done: false,
+    _paused: false,
+  },
+);

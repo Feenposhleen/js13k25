@@ -4,7 +4,23 @@ import createSprite from "../../core/sprite";
 export default () => {
   var _ticks = 0;
 
-  const introScene = createScene((_, __, delta) => {
+  const introScene = createScene((scene, state, delta) => {
+    if (state.input._keys["w"]) {
+      scene._rootSprite._position[1] -= 100 * delta;
+    } else if (state.input._keys["s"]) {
+      scene._rootSprite._position[1] += 100 * delta;
+    }
+
+    if (state.input._keys["a"]) {
+      scene._rootSprite._position[0] -= 100 * delta;
+    } else if (state.input._keys["d"]) {
+      scene._rootSprite._position[0] += 100 * delta;
+    }
+
+    if (state.input._pointer._down) {
+      scene._rootSprite._position = state.input._pointer._coord;
+    }
+
     _ticks += delta;
   });
 

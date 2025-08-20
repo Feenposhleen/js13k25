@@ -6,11 +6,19 @@ export type TransferDataFromWorker = {
   renderArray: Float32Array;
 }
 
+export type FullState = {
+  game: GameWorker;
+  state: GameState;
+  input: TransferDataFromWindow;
+}
+
 const createGameWorker = () => {
   const _sceneRemoveList = new Set<Scene>();
+  var _gameState: GameState | undefined;
   var _sceneTree: Scene[] = [];
-  var _dataFromWindow: TransferDataFromWindow = { keys: {}, pointer: null };
+  var _dataFromWindow: TransferDataFromWindow = { _keys: {}, _pointer: { _coord: [0, 0], _down: false } };
   var _lastTs: number = 0;
+  var _state: FullState | undefined = undefined;
 
   self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
     _dataFromWindow = data;
@@ -23,15 +31,18 @@ const createGameWorker = () => {
   };
 
   const _updateGame = async () => {
+    if (!_state) return;
+
     const now = performance.now();
     const delta = (now - _lastTs) / 1000;
     _lastTs = now;
 
-    if (!_sceneTree.length) return;
+    _state.input = _dataFromWindow;
 
+    if (!_sceneTree.length) return;
     for (const scene of _sceneTree) {
       if (!scene._paused) {
-        scene._update(_dataFromWindow, delta);
+        scene._update(_state, delta);
       }
 
       if (scene._done) { _sceneRemoveList.add(scene); }
@@ -46,9 +57,15 @@ const createGameWorker = () => {
     _updateWindow(renderData);
   };
 
-  const _ = {
-    _initialize(initialScene: Scene) {
-      _._pushScene(initialScene);
+  const gameWorker = {
+    _initialize(initialScene: Scene, initialState: GameState) {
+      _state = {
+        game: gameWorker,
+        state: initialState,
+        input: _dataFromWindow,
+      };
+
+      gameWorker._pushScene(initialScene);
     },
     _pushScene(scene: Scene) {
       _sceneTree.push(scene);
@@ -61,7 +78,7 @@ const createGameWorker = () => {
     },
   };
 
-  return _;
+  return gameWorker;
 }
 
 export default createGameWorker;

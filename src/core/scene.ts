@@ -1,3 +1,5 @@
+import { TransferDataFromWindow } from "./game_window";
+import { FullState } from "./game_worker";
 import createSprite, { Sprite } from "./sprite";
 
 export type Scene = {
@@ -5,31 +7,30 @@ export type Scene = {
   _done: boolean;
   _rootSprite: Sprite;
   _setUpdater: (updater: SceneUpdater) => void;
-  _update: (gameState: Object, delta: number) => void;
+  _update: (state: FullState, delta: number) => void;
 };
 
-export type SceneUpdater = (scene: Scene, gameState: Object, delta: number) => void;
+export type SceneUpdater = (scene: Scene, state: FullState, delta: number) => void;
 
-const updateSpriteTree = (scene: Scene, gameState: Object, dt: number): void => {
+const updateSpriteTree = (scene: Scene, state: FullState, dt: number): void => {
   for (const child of scene._rootSprite._children) {
-    child._update(gameState, dt);
-    updateSpriteTree({ ...scene, _rootSprite: child }, gameState, dt);
+    child._update(state, dt);
+    updateSpriteTree({ ...scene, _rootSprite: child }, state, dt);
   }
 };
 
 export default (update?: SceneUpdater | undefined) => {
-  var _updater: SceneUpdater = update || ((scene, gameState, delta): void => { });
-
+  var _updater: SceneUpdater = update || ((_, __, ___): void => { });
 
   const _scene = {
     _paused: false,
     _done: false,
     _rootSprite: createSprite(0, [0, 0]),
     _setUpdater: (updater: SceneUpdater) => _updater = updater,
-    _update: (gameState: Object, delta: number): void => {
+    _update: (state: FullState, delta: number): void => {
       if (!_scene._paused) {
-        _updater(_scene, gameState, delta);
-        updateSpriteTree(_scene, gameState, delta);
+        _updater(_scene, state, delta);
+        updateSpriteTree(_scene, state, delta);
       }
     },
   }

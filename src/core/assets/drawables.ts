@@ -1,8 +1,8 @@
 export default {
   //##gen-begin
   _palette: [
-    "#AA7939",
-    "#CAA26D"
+    "#507180ff",
+    "#3a4a55ff"
   ],
   _textures: [
     [

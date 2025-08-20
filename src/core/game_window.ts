@@ -4,12 +4,19 @@ import createRenderer, { Renderer } from "./renderer";
 import createMiniSequencer, { MiniSequencer } from "./sound";
 import utils, { Vec } from "./utils";
 
+export type Pointer = {
+  _coord: Vec;
+  _down: boolean;
+  buttonIndex?: number;
+}
+
 export type TransferDataFromWindow = {
-  keys: Record<string, boolean>;
-  pointer: Vec | null;
+  _keys: Record<string, boolean>;
+  _pointer: Pointer;
 }
 
 const createGameWindow = () => {
+  const _keysDown: Record<string, boolean> = {};
   const _canvas = utils.$('#c') as HTMLCanvasElement;
   const scriptContent = (utils.$('#j') as HTMLScriptElement).innerHTML;
   const _jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
@@ -18,13 +25,13 @@ const createGameWindow = () => {
   let _pixelMultiplier = 1;
   let _renderer: Renderer | null = null;
   let _pendingFrame: Float32Array | null = null;
-  let _transferData: TransferDataFromWindow = { keys: {}, pointer: null };
+  let _transferData: TransferDataFromWindow = { _keys: {}, _pointer: { _coord: [0, 0], _down: false } };
   let _music: MiniSequencer | null = null;
   let _sfx: MiniSequencer | null = null;
 
   const _requestNewFrame = () => {
     _worker.postMessage(_transferData);
-    _transferData = { keys: {}, pointer: null };
+    _transferData._keys = _keysDown;
   };
 
   const _receiveFrame = (data: TransferDataFromWorker) => {
@@ -32,15 +39,28 @@ const createGameWindow = () => {
   };
 
   const _wireInput = () => {
-    window.onpointerdown = (ev: any) => {
-      _transferData.pointer = [
+    window.onpointermove = (ev: PointerEvent) => {
+      _transferData._pointer._coord = [
         ev.clientX / _pixelMultiplier,
         ev.clientY / _pixelMultiplier,
       ];
     };
 
+    window.onpointerdown = (ev: PointerEvent) => {
+      _transferData._pointer._down = true;
+    };
+
+    window.onpointerup = (ev: PointerEvent) => {
+      _transferData._pointer._down = false;
+    };
+
     window.addEventListener('keydown', (ev) => {
-      _transferData.keys[ev.key] = true;
+      _transferData._keys[ev.key] = true;
+      _keysDown[ev.key] = true;
+    });
+
+    window.addEventListener('keyup', (ev) => {
+      _keysDown[ev.key] = false;
     });
   };
 

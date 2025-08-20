@@ -1,6 +1,7 @@
+import { FullState } from "./game_worker";
 import { Vec } from "./utils";
 
-export type SpriteUpdater = (sprite: Sprite, gameState: Object, delta: number) => void;
+export type SpriteUpdater = (sprite: Sprite, state: FullState, delta: number) => void;
 
 export type Sprite = {
   _texture: number | null;
@@ -10,7 +11,7 @@ export type Sprite = {
   _opacity: number;
   _z: number;
   _children: Sprite[];
-  _update: (gameState: Object, dt: number) => void;
+  _update: (state: FullState, dt: number) => void;
   _setUpdater: (updater: SpriteUpdater) => void;
   _addChild: (sprite: Sprite) => void;
   _removeChild: (sprite: Sprite) => void;
@@ -48,7 +49,7 @@ const createSprite = (
 
     _setUpdater: (updater: SpriteUpdater) => _updater = updater,
 
-    _update: (gameState: Object, dt: number): void => _updater(_sprite, gameState, dt),
+    _update: (state: FullState, delta: number): void => _updater(_sprite, state, delta),
   }
 
   return _sprite;

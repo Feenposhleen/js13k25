@@ -7,11 +7,11 @@ export class Game {
   _initialScene: Scene | null = null;
   _game: GameWorker | GameWindow | null = null;
 
-  constructor(scene: Scene) {
-    this._initialScene = scene;
+  constructor(initialScene: Scene, initialState: GameState) {
+    this._initialScene = initialScene;
     if ((self as any).WorkerGlobalScope !== undefined) {
       this._game = createGameWorker();
-      this._game._initialize(scene);
+      this._game._initialize(initialScene, initialState);
     } else {
       this._game = createGameWindow();
       this._game._initialize();
