@@ -54,10 +54,6 @@ const createGameWindow = () => {
   };
 
   const _initialize = async (): Promise<void> => {
-    const audioCtx = new window.AudioContext();
-    _music = createMiniSequencer(audioCtx);
-    _sfx = createMiniSequencer(audioCtx);
-
     await AssetLibrary._preRenderTextures();
 
     playButton.style.display = 'block';
@@ -66,6 +62,34 @@ const createGameWindow = () => {
 
   const _start = async (): Promise<void> => {
     playButton.style.display = 'none';
+
+    const audioCtx = new window.AudioContext();
+    _music = createMiniSequencer(audioCtx);
+    _sfx = createMiniSequencer(audioCtx);
+
+    _music.playLoop({
+      bpm: 180,
+      bass: [
+        0, 1, 0, 0,
+        1, 0, 0, 0,
+        0, 0, 0, 0,
+        1, 0, 0, 0,
+      ],
+      snare: [
+        0, 0, 1, 0,
+        0, 0, 1, 0,
+      ],
+      chords: [
+        1, 0, 0, 0,
+        0, 0, 0, 0,
+        1, 0, 1, 0,
+      ],
+      kick: [
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+      ],
+    });
+
     _renderer = createRenderer(_canvas);
     _requestNewFrame();
     _renderLoop();
