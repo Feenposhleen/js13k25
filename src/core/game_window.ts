@@ -67,28 +67,28 @@ const createGameWindow = () => {
     _music = createMiniSequencer(audioCtx);
     _sfx = createMiniSequencer(audioCtx);
 
-    _music.playLoop({
-      bpm: 180,
-      bass: [
-        0, 1, 0, 0,
-        1, 0, 0, 0,
-        0, 0, 0, 0,
-        1, 0, 0, 0,
-      ],
-      snare: [
-        0, 0, 1, 0,
-        0, 0, 1, 0,
-      ],
-      chords: [
-        1, 0, 0, 0,
-        0, 0, 0, 0,
-        1, 0, 1, 0,
-      ],
-      kick: [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-      ],
-    });
+    // _music.playLoop({
+    //   bpm: 180,
+    //   bass: [
+    //     0, 1, 0, 0,
+    //     1, 0, 0, 0,
+    //     0, 0, 0, 0,
+    //     1, 0, 0, 0,
+    //   ],
+    //   snare: [
+    //     0, 0, 1, 0,
+    //     0, 0, 1, 0,
+    //   ],
+    //   chords: [
+    //     1, 0, 0, 0,
+    //     0, 0, 0, 0,
+    //     1, 0, 1, 0,
+    //   ],
+    //   kick: [
+    //     1, 0, 0, 0,
+    //     0, 1, 0, 0,
+    //   ],
+    // });
 
     _renderer = createRenderer(_canvas);
     _requestNewFrame();

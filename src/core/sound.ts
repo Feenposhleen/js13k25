@@ -27,7 +27,6 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   let opts: PlayOptionsHard | null = null;
   let _steps = 8;
 
-  // ---- musical helpers ----
   const _minorSemis = (deg: number) => {
     const scale = [0, 2, 3, 5, 7, 8, 10];
     return 12 * Math.floor(deg / 7) + scale[deg % 7];
@@ -38,7 +37,7 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     return base * Math.pow(2, _minorSemis(deg) / 12);
   };
 
-  // Minifying helpers
+  // For minification ---
   const _createGain = (tStart: number, inAt: number, outAt: number, value: number = 0.6): GainNode => {
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.0001, tStart);
@@ -72,7 +71,8 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     node.stop(tStop);
   }
 
-  // ---- instruments (procedural) ----
+  // /---
+
   const _snare = (t: number) => {
     const o = _createOscillator(t, "square", 200);
     const g = _createGain(t, 0.002, 0.15, 0.2);
@@ -80,7 +80,7 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     o.frequency.exponentialRampToValueAtTime(40 + ((step % _steps) * 5), t + 0.12);
 
     _chain([o, g, ctx.destination]);
-    _startAndStop(o, t, t + 0.16);
+    _startAndStop(o, t, t + 0.2);
   };
 
   const _kick = (t: number) => {
@@ -101,26 +101,25 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   };
 
   const _chord = (t: number, deg: number, octave: number) => {
-    const degrees = [deg, deg + 2, deg + 4]; // simple triad in (natural minor) scale degrees
+    const degrees = [deg, deg + 2, deg + 4];
 
-    const g = _createGain(t, 0.01, 1, 0.1);
+    const g = _createGain(t, 0.04, 1, 0.05);
     _chain([g, ctx.destination]);
 
     degrees.forEach((d, i) => {
       const o = _createOscillator(t, "triangle", _freqFromDegree(d, octave + 1));
-      o.detune.setValueAtTime((i - 1) * 4, t); // slight spread
+      o.detune.setValueAtTime((i - 1) * 4, t);
       _chain([o, g]);
       _startAndStop(o, t, t + 1);
     });
   };
 
-  // ---- scheduler ----
   const _schedule = () => {
     if (!opts) return;
     while (nextTime < ctx.currentTime + lookahead) {
       const i = step % _steps;
       const t = nextTime;
-      const d = i; // use step index as degree (simple motion)
+      const d = i;
       const { octave, bass, chords, snare, kick } = opts;
 
       if (kick[i % kick.length]) _kick(t);
@@ -152,7 +151,6 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     );
 
     const spb = 60 / opts.bpm;
-    // 8 steps per bar (eighth-notes in 4/4): 1 step = spb/2
     stepDur = spb / 2;
 
     if (timer) clearInterval(timer);
