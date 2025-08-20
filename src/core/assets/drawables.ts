@@ -7,29 +7,27 @@ export default {
   _textures: [
     [
       [
-        0,
-        0,
+        0, 0,
         0, 1,
         0.5, 0,
         1, 1,
       ],
       [
-        1,
-        0,
+        1, 0,
         0.5, 0,
         1, 1,
         0.5, 1
       ],
     ],
   ],
-  _textureNames: [
-    "triangle",
-  ],
+  _textureNameMap: {
+    triangle: 0,
+  },
   //##gen-end
 } as RawDrawableData;
 
 export type RawDrawableData = {
   _palette: string[];
   _textures: number[][][];
-  _textureNames: string[];
+  _textureNameMap: Record<string, number>;
 };

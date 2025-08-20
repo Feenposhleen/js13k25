@@ -8,18 +8,19 @@ const assetLibrary = {
 
   async _preRenderTextures(): Promise<void> {
     let i = 0;
+
+    // TODO: Handle names base on textureNameMap
     for (const textureData of drawables._textures) {
-      const name = drawables._textureNames[i]!;
       this._textureCache.set(
-        name,
+        '',
         await this._preRenderTexture(
           (drawables as RawDrawableData)._palette,
           textureData,
         ),
       );
 
-      this._textureNameIndexCache.set(name, i);
-      this._textureIndexNameCache.set(i, name);
+      this._textureNameIndexCache.set('', i);
+      this._textureIndexNameCache.set(i, '');
       i++;
     }
   },
