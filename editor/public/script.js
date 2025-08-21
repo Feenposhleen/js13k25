@@ -7,44 +7,31 @@
   const coords = [];
   const polys = [];
 
-  // https://paletton.com/#uid=50I0u0kllll88tjeJpkrXhmCCdn
-  const palette = [
-    'AA7939',
-    'EAD0AE',
-    'CAA26D',
-    '8A5712',
-    '6A3D00',
-    'AA8E39',
-    'EADBAE',
-    'CAB36D',
-    '8A6C12',
-    '6A5000',
-    'AA5939',
-    'EABFAE',
-    'CA876D',
-    '8A3412',
-    '6A1E00',
-  ];
-
   let mode = NEW;
+  let palette = [];
+  let drawablesJson;
+  let selectedSpriteName;
   let selectedPoly;
   let selectedCoord;
 
   const encodePolys = () => polys
     .filter(x => x.points.length > 4)
-    .reduce((res, curr) => [...res, palette.indexOf(curr.color).toString(), ...curr.points], []);
+    .reduce((res, curr) => [...res, [drawablesJson._palette.indexOf(curr.color), 0, ...curr.points]], []);
 
-  const decodePolys = (encoded) => {
+  const decodePolys = (polyDataList) => {
     polys.length = 0;
 
     let poly;
-    encoded.forEach((item) => {
-      if (typeof item == 'string') {
-        poly = createPoly();
-        poly.color = palette[parseInt(item)];
-      } else {
-        poly.points.push(item);
-      }
+    polyDataList.forEach((polyData) => {
+      polyData.forEach((value, idx) => {
+        if (idx === 0) {
+          poly = createPoly();
+          poly.color = drawablesJson._palette[value];
+        } else if (idx === 1) {
+        } else {
+          poly.points.push(value);
+        }
+      });
     });
 
     polys.forEach(applyPoly);
@@ -59,12 +46,13 @@
 
   const createColors = () => {
     const colorRoot = document.querySelector('#colors');
-    for (let color of palette) {
+    [...colorRoot.children].forEach(el => el.remove());
+
+    for (let color of drawablesJson._palette) {
       const el = document.createElement('div');
       el.classList.add('color');
-      el.classList.add(`c-${color}`);
-      el.style.backgroundColor = `#${color}`;
-      el.addEventListener('click', colorSetter(`${color}`));
+      el.style.backgroundColor = color;
+      el.addEventListener('click', colorSetter(color));
       colorRoot.appendChild(el);
     }
   }
@@ -92,11 +80,11 @@
 
   const applyPoly = poly => {
     const pointString = poly.points.reduce((res, curr, idx) =>
-      (res + (curr * 10) + ((idx % 2 ? ', ' : ' '))), '')
+      (res + (curr * 24) + ((idx % 2 ? ', ' : ' '))), '')
       .slice(0, -2);
 
     poly.el.setAttribute('points', pointString);
-    poly.el.setAttribute('fill', '#' + poly.color);
+    poly.el.setAttribute('fill', poly.color);
     updateCoords();
   };
 
@@ -291,7 +279,24 @@
     return poly;
   };
 
-  const main = () => {
+  const loadSprite = spriteName => {
+    for (let key of Object.keys(drawablesJson._textureNameMap)) {
+      if (key === spriteName) {
+        decodePolys(drawablesJson._textures[drawablesJson._textureNameMap[key]]);
+        break;
+      }
+    }
+  }
+
+  const fetchDrawables = async () => {
+    drawablesJson = await fetch('/drawables').then(res => res.json());
+    createColors();
+  }
+
+  const main = async () => {
+    await fetchDrawables();
+    loadSprite('triangle');
+
     createCoords();
     createColors();
 

@@ -253,9 +253,9 @@ process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection:', reason && reason.stack ? reason.stack : String(reason));
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, 'localhost', () => {
   const addr = server.address();
-  const host = addr && addr.address ? addr.address : '0.0.0.0';
+  const host = addr && addr.address ? addr.address : 'localhost';
   const port = addr && addr.port ? addr.port : PORT;
   console.log(`Editor hosted at http://${host}:${port}/`);
   console.log(`GET  /drawables -> reads ${DRAWABLES_PATH}`);
