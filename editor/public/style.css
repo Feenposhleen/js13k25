@@ -3,6 +3,10 @@
   height: 700px;
 }
 
+.poly {
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.2));
+}
+
 .poly.selected {
   stroke: aqua;
   stroke-width: 1px;
@@ -89,6 +93,12 @@ body {
 #colors div {
   width: 12px;
   height: 20px;
-  border: 1px solid #888;
+  border: 2px solid #888;
   margin: 1px;
+  border-bottom: 10px solid #888;
+}
+
+#colors div.selected {
+  border: 2px solid #000;
+  border-bottom: 10px solid #000;
 }

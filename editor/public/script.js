@@ -3,7 +3,11 @@
   const svgRoot = document.querySelector('#svg');
   const polyRoot = document.querySelector('#polys');
   const coordRoot = document.querySelector('#coords');
+  const colorElements = [];
+
   const ADD = 'add', REMOVE = 'remove', NEW = 'new', MOVE = 'move';
+  const SIZE = 50;
+
   const coords = [];
   const polys = [];
 
@@ -13,10 +17,18 @@
   let selectedSpriteName;
   let selectedPoly;
   let selectedCoord;
+  let selectedColor;
 
   const encodePolys = () => polys
     .filter(x => x.points.length > 4)
-    .reduce((res, curr) => [...res, [drawablesJson._palette.indexOf(curr.color), 0, ...curr.points]], []);
+    .reduce((res, curr) => [
+      ...res,
+      [
+        drawablesJson._palette.indexOf(curr.color),
+        0,
+        ...(curr.points).map((x) => (x / SIZE))
+      ],
+    ], []);
 
   const decodePolys = (polyDataList) => {
     polys.length = 0;
@@ -29,19 +41,12 @@
           poly.color = drawablesJson._palette[value];
         } else if (idx === 1) {
         } else {
-          poly.points.push(value);
+          poly.points.push(value * SIZE);
         }
       });
     });
 
     polys.forEach(applyPoly);
-  };
-
-  const colorSetter = color => () => {
-    if (selectedPoly) {
-      selectedPoly.color = color;
-      applyPoly(selectedPoly);
-    }
   };
 
   const createColors = () => {
@@ -52,8 +57,33 @@
       const el = document.createElement('div');
       el.classList.add('color');
       el.style.backgroundColor = color;
-      el.addEventListener('click', colorSetter(color));
+      el.addEventListener('click', () => selectColor(color));
       colorRoot.appendChild(el);
+    }
+
+    colorElements.length = 0;
+    for (let el of colorRoot.children) {
+      colorElements.push(el);
+    }
+
+    selectColor(drawablesJson._palette);
+  }
+
+  const selectColor = color => {
+    if (color === selectedColor) return;
+
+    selectedColor = color;
+
+    colorElements.forEach((el, idx) => {
+      el.classList.remove('selected');
+      if (drawablesJson._palette[idx] === color) {
+        el.classList.add('selected');
+      }
+    });
+
+    if (selectedPoly) {
+      selectedPoly.color = color;
+      applyPoly(selectedPoly);
     }
   }
 
@@ -80,7 +110,7 @@
 
   const applyPoly = poly => {
     const pointString = poly.points.reduce((res, curr, idx) =>
-      (res + (curr * 24) + ((idx % 2 ? ', ' : ' '))), '')
+      (res + (curr * 10) + ((idx % 2 ? ', ' : ' '))), '')
       .slice(0, -2);
 
     poly.el.setAttribute('points', pointString);
@@ -115,8 +145,8 @@
   };
 
   const createCoords = () => {
-    for (var y = -12; y < 13; y++) {
-      for (var x = -12; x < 13; x++) {
+    for (var y = 0; y < SIZE + 1; y++) {
+      for (var x = 0; x < SIZE + 1; x++) {
         const el = document.createElementNS(svgNs, 'circle');
         el.coord = [x, y];
         coords.push(el);
@@ -126,7 +156,7 @@
         el.setAttribute('cx', x * 10);
         el.setAttribute('cy', y * 10);
 
-        if (x === 0 && y === 0) {
+        if (x === (SIZE / 2) && y === SIZE / 2) {
           el.classList.add('center');
         }
 
@@ -138,6 +168,8 @@
         coordRoot.appendChild(el);
       }
     }
+
+    svgRoot.attributes['viewBox'].value = `-10 -10 ${SIZE * 10 + 20} ${SIZE * 10 + 20}`;
   };
 
   const updateCoords = () => {
@@ -262,7 +294,7 @@
 
     const poly = {
       points: [],
-      color: palette[0],
+      color: selectedColor || palette[0],
       el: el,
     };
 
