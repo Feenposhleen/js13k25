@@ -1,5 +1,4 @@
-export default {
-  //##gen-begin
+export default /*GEN*/{
   _palette: [
     "#507180ff",
     "#3a4a55ff"
@@ -23,8 +22,7 @@ export default {
   _textureNameMap: {
     triangle: 0,
   },
-  //##gen-end
-} as RawDrawableData;
+}/*/GEN*/ as RawDrawableData;
 
 export type RawDrawableData = {
   _palette: string[];

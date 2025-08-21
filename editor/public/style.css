@@ -1,0 +1,94 @@
+#svg {
+  width: 700px;
+  height: 700px;
+}
+
+.poly.selected {
+  stroke: aqua;
+  stroke-width: 1px;
+}
+
+.coord {
+  fill: blue;
+  opacity: 0.2;
+  stroke: transparent;
+  stroke-width: 4px;
+  paint-order: stroke fill;
+}
+
+.coord.center {
+  stroke: purple;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+}
+
+.coord.active {
+  stroke: aqua;
+}
+
+.coord.over {
+  stroke: blue;
+}
+
+.add .coord.over {
+  opacity: 0.8;
+  stroke: lime;
+}
+
+.move .coord.selected,
+.move .coord.selected,
+.add .coord.selected {
+  opacity: 0.8;
+  stroke: green;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#modes,
+#actions {
+  width: 400px;
+  display: flex;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+#actions div,
+#modes div {
+  cursor: pointer;
+  padding: 5px;
+  width: 60px;
+  text-align: center;
+  color: white;
+  font-family: sans-serif;
+  font-size: 10;
+  background-color: #666;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-weight: 400;
+  opacity: 0.6;
+  margin: 2px;
+}
+
+#modes div.active {
+  opacity: 1;
+}
+
+#colors {
+  padding-top: 10px;
+  width: 260px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#colors div {
+  width: 12px;
+  height: 20px;
+  border: 1px solid #888;
+  margin: 1px;
+}

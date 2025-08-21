@@ -45,6 +45,54 @@ function inlineTemplate({
   };
 }
 
+function runScript({ script = "editor/server.js" } = {}) {
+  let child = null;
+  return {
+    name: "run-editor-server",
+    buildStart() {
+      if (child) return; // already started
+      try {
+        const cp = require("child_process");
+        const scriptPath = path.resolve(script);
+        // Use the same Node binary that's running Rollup
+        child = cp.spawn(process.execPath, [scriptPath], {
+          stdio: "inherit",
+          windowsHide: true
+        });
+
+        const killChild = (signal) => {
+          if (!child) return;
+          try {
+            child.kill(signal || "SIGTERM");
+          } catch (e) {
+            try { child.kill(); } catch (_) { }
+          }
+          child = null;
+        };
+
+        // Ensure child is killed when parent exits or is terminated
+        process.on("exit", () => killChild());
+        process.on("SIGINT", () => { killChild(); process.exit(0); });
+        process.on("SIGTERM", () => { killChild(); process.exit(0); });
+
+        // Keep the plugin aware if the child exits unexpectedly
+        child.on("exit", (code, sig) => {
+          child = null;
+          // no-op: allow watcher to continue; user can restart rollup if needed
+        });
+      } catch (err) {
+        this.warn(`run-editor-server: failed to start ${script}: ${err.message}`);
+      }
+    },
+    // when the build/watch ends, try to kill the child
+    closeBundle() {
+      // In watch mode we want the server to survive incremental rebuilds.
+      this.warn(`run-editor-server: watch mode — keeping ${script} running across rebuilds`);
+      return;
+    }
+  };
+}
+
 module.exports = (cli) => {
   const dev = !!cli.watch; // true when running `rollup -w`
 
@@ -74,6 +122,9 @@ module.exports = (cli) => {
         ],
         exclude: 'node_modules/**',
       }),
+
+      // Start editor/server.js in dev watch mode
+      dev && runScript({ script: "editor/server.js" }),
 
       // Production-only minification (keep builds fast in dev)
       !dev &&

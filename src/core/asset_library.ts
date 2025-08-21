@@ -1,5 +1,4 @@
-import drawables, { RawDrawableData } from "./assets/drawables";
-
+import drawables, { RawDrawableData } from "./assets/drawables.gen";
 
 const assetLibrary = {
   _textureCache: new Map<string, ImageData>(),
