@@ -7,17 +7,18 @@
   filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.2));
 }
 
-.poly.selected {
+.poly.active {
   stroke: aqua;
   stroke-width: 1px;
 }
 
 .coord {
-  fill: blue;
-  opacity: 0.2;
+  fill: black;
+  opacity: 0.3;
   stroke: transparent;
   stroke-width: 4px;
   paint-order: stroke fill;
+  mix-blend-mode: luminosity;
 }
 
 .coord.center {
@@ -28,6 +29,7 @@
 
 .coord.active {
   stroke: aqua;
+  stroke-width: 8px;
 }
 
 .coord.over {

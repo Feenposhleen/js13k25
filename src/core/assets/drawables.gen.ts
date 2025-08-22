@@ -3,8 +3,8 @@ export default /*GEN*/{
     "#507180",
     "#3a4a55"
   ],
-  "_textures": [
-    [
+  "_textures": {
+    "triangle": [
       [
         0, 0, 0.16, 0.8, 0.36, 0.5, 0.72, 0.46, 0.66, 0.32, 0.32, 0.26, 0.14, 0.36, 0.06, 0.54
       ], [
@@ -15,14 +15,10 @@ export default /*GEN*/{
         0, 0, 0.44, 0.26, 0.5, 0.12, 0.64, 0.08, 0.78, 0.12, 0.8, 0.18, 0.68, 0.28, 0.58, 0.3
       ]
     ]
-  ],
-  "_textureNameMap": {
-    "triangle": 0
   }
 }/*/GEN*/ as RawDrawableData;
 
 export type RawDrawableData = {
   _palette: string[];
-  _textures: number[][][];
-  _textureNameMap: Record<string, number>;
+  _textures: Record<string, number[][]>;
 };

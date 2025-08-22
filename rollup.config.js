@@ -109,9 +109,9 @@ module.exports = (cli) => {
       tryCatchDeoptimization: false
     },
     plugins: [
-      // TypeScript → modern JS (no helpers if you target ES2020+ in tsconfig)
       typescript({ tsconfig: "./tsconfig.json" }),
 
+      // Support for GLSL shaders
       glslify({
         include: [
           '**/*.vs',
@@ -161,10 +161,12 @@ module.exports = (cli) => {
         headers: { "Cache-Control": "no-store" },
         open: false
       }),
+
+      // Live reload on changes to dist/ (e.g., bundle, index.html)
       dev && livereload({ watch: "dist", verbose: false })
     ].filter(Boolean),
     watch: {
-      clearScreen: false
+      clearScreen: true,
     }
   };
 };

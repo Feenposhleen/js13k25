@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = Number(process.env.PORT) || 7362;
+const PORT = 7362;
+const HOST = 'localhost';
 // Serve files from the `public` subfolder instead of the script's directory
 const ROOT_DIR = path.join(__dirname, 'public');
 const DRAWABLES_PATH = path.join(__dirname, '..', 'src', 'core', 'assets', 'drawables.gen.ts');
@@ -253,11 +254,8 @@ process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection:', reason && reason.stack ? reason.stack : String(reason));
 });
 
-server.listen(PORT, 'localhost', () => {
-  const addr = server.address();
-  const host = addr && addr.address ? addr.address : 'localhost';
-  const port = addr && addr.port ? addr.port : PORT;
-  console.log(`Editor hosted at http://${host}:${port}/`);
+server.listen(PORT, HOST, () => {
+  console.log(`Editor hosted at http://${HOST}:${PORT}/`);
   console.log(`GET  /drawables -> reads ${DRAWABLES_PATH}`);
   console.log(`POST /drawables -> writes ${DRAWABLES_PATH}`);
   console.log(`Serving files from ${ROOT_DIR}`);
