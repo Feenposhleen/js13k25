@@ -10,6 +10,7 @@ class SvgPolygonView {
   onCoordClick = null;
   onPolyClick = null;
   coords = [];
+  lastClickedCoord = null;
 
   constructor({ initialPolygons, onCoordClick, onPolyClick }) {
     this.polygons = initialPolygons;
@@ -56,7 +57,6 @@ class SvgPolygonView {
   };
 
   onCoordHover(coords, el, isHovering) {
-    console.log(`${coords} ${isHovering ? 'entered' : 'exited'}`);
     var coord = this.coords[coords[1]][coords[0]];
     coord.classList.toggle('over', isHovering);
   }

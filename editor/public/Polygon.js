@@ -22,8 +22,22 @@ class Polygon {
     this.points.splice(index, 2);
   }
 
+  pointIndex(coords) {
+    for (let i = 0; i < this.points.length; i += 2) {
+      const px = this.points[i];
+      const py = this.points[i + 1];
+      if (this.distance([px, py], coords) < 2) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
   // Returns the index where to insert a new point to be as close as possible to an edge
   closestIndex(coords) {
+    if (this.points.length < 4) return 2;
+
     let best = { i: -1, j: -1, dist2: Infinity, point: null, t: 0 };
     const n = this.points.length / 2;
     for (let i = 0; i < n; i++) {

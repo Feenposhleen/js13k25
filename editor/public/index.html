@@ -5,13 +5,25 @@
 </head>
 
 <body>
-  <div id="modes"></div>
-  <svg viewBox="-10, -10, 410, 410" id="svg">
-    <g id="polys"></g>
-    <g id="coords"></g>
-  </svg>
-  <div id="colors"></div>
-  <div id="actions"></div>
+  <div id="wrap">
+    <div id="left">
+      <div id="modes"></div>
+      <div id="colors"></div>
+    </div>
+    <div id="center">
+      <svg viewBox="-10, -10, 10, 10" id="svg">
+        <g id="polys"></g>
+        <g id="coords"></g>
+      </svg>
+      <div id="backgrounds"></div>
+    </div>
+    <div id="right">
+      <div id="textures"></div>
+      <div id="actions"></div>
+    </div>
+  </div>
+  <script src="EditorData.js"></script>
+  <script src="EditorUi.js"></script>
   <script src="Polygon.js"></script>
   <script src="TextureManager.js"></script>
   <script src="Texture.js"></script>
