@@ -71,7 +71,7 @@ class SvgPolygonView {
     this.polysContainerEl.innerHTML = '';
 
     this.polygons = newPolygons || this.polygons;
-    this.selectedPolygon = this.polygons.includes(this.selectedPolygon) ? this.selectedPolygon : null;
+    this.selectedPolygon = newPolygons.includes(this.selectedPolygon) ? this.selectedPolygon : null;
 
     this.polygons.forEach((poly) => {
       this.polygonElMap.get(poly)?.remove();

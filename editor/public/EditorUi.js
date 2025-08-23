@@ -22,6 +22,8 @@ class EditorUI {
     editorData,
     onAction,
     onColorSelected,
+    onColorChanged,
+    onColorRemoved,
     onModeSelected,
     onTextureSelected,
     onEditorDataUpdated,
@@ -35,6 +37,8 @@ class EditorUI {
     this.onAction = onAction;
     this.onModeSelected = onModeSelected;
     this.onColorSelected = onColorSelected;
+    this.onColorChanged = onColorChanged;
+    this.onColorRemoved = onColorRemoved;
     this.onTextureSelected = onTextureSelected;
     this.onEditorDataUpdated = onEditorDataUpdated;
     this.onLayeringAction = onLayeringAction;
@@ -162,6 +166,21 @@ class EditorUI {
         this.selectedColor = color;
         console.log(`Color clicked: ${color}`);
       });
+
+      const removeButton = this.createButton('✖', ['remove-color'], () => {
+        if (confirm(`Are you sure you want to remove the color "${color}"? This will change all polygons using this color to the first color in the palette.`)) {
+          this.onColorRemoved(color);
+        }
+      });
+
+      const editButton = this.createButton('✎', ['edit-color'], () => {
+        const newColor = prompt('Enter a new color (hex, #000000)', color);
+        if (!/^#[0-9a-f]{6}$/i.test(newColor)) return;
+        this.onColorChanged(color, newColor);
+      });
+
+      colorEl.appendChild(removeButton);
+      colorEl.appendChild(editButton);
     });
 
     const addColorButton = this.createButton('+', ['add-color'], () => {

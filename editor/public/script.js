@@ -113,6 +113,18 @@
         }
         polygonView.updatePolygons(editorUi.selectedTexture.polygons);
       },
+      onColorChanged: (oldColor, newColor) => {
+        console.log(`Color changed: ${oldColor} -> ${newColor}`);
+        editorData.changeColor(oldColor, newColor);
+        editorUi.updateColors(editorData);
+        polygonView.updatePolygons(editorUi.selectedTexture.polygons);
+      },
+      onColorRemoved: (color) => {
+        console.log(`Color removed: ${color}`);
+        editorData.removeColor(color);
+        editorUi.updateColors(editorData);
+        polygonView.updatePolygons(editorUi.selectedTexture.polygons);
+      },
       onTextureSelected: (texture) => {
         console.log(`Texture selected: ${texture.name}`);
         polygonView.updatePolygons(editorUi.selectedTexture.polygons);

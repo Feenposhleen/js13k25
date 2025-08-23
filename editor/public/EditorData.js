@@ -18,7 +18,7 @@ class EditorData {
 
   changeColor(oldColor, newColor) {
     this.palette.splice(this.palette.indexOf(oldColor), 1, newColor);
-    Object.values(textures).forEach(texture => {
+    Object.values(this.textures).forEach(texture => {
       texture.polygons.forEach((polygon) => {
         if (polygon.color === oldColor) {
           polygon.color = newColor;
@@ -29,7 +29,7 @@ class EditorData {
 
   removeColor(color) {
     this.palette.splice(this.palette.indexOf(color), 1);
-    Object.values(textures).forEach(texture => {
+    Object.values(this.textures).forEach(texture => {
       texture.polygons.forEach((polygon) => {
         if (polygon.color === color) {
           polygon.color = this.palette[0] || '#000';
