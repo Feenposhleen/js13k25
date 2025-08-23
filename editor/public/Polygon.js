@@ -22,23 +22,31 @@ class Polygon {
     this.points.splice(index, 2);
   }
 
-  // Returns the index where to insert a new point
-  // to be as close as possible to a line (approximately)
+  // Returns the index where to insert a new point to be as close as possible to an edge
   closestIndex(coords) {
-    let closestIndex = 0;
-    let closestDistance = Infinity;
+    let best = { i: -1, j: -1, dist2: Infinity, point: null, t: 0 };
+    const n = this.points.length / 2;
+    for (let i = 0; i < n; i++) {
+      const ax = this.points[2 * i], ay = this.points[2 * i + 1];
+      const j = (i + 1) % n;
+      const bx = this.points[2 * j], by = this.points[2 * j + 1];
 
-    for (let i = 0; i < this.points.length; i += 2) {
-      const p = [this.points[i], this.points[i + 1]];
-      const dist = this.distance(p, coords);
+      const vx = bx - ax, vy = by - ay;
+      const wx = coords[0] - ax, wy = coords[1] - ay;
+      const t = Math.max(0, Math.min(1, (wx * vx + wy * vy) / (vx * vx + vy * vy)));
 
-      if (dist < closestDistance) {
-        closestDistance = dist;
-        closestIndex = i;
+      const cx = ax + t * vx, cy = ay + t * vy;
+      const dx = coords[0] - cx, dy = coords[1] - cy, d2 = dx * dx + dy * dy;
+
+      if (d2 < best.dist2) {
+        best = {
+          i: 2 * i, j: 2 * j, dist2: d2,
+          point: { x: cx, y: cy }, t
+        };
       }
     }
 
-    return closestIndex;
+    return best.j;
   }
 
   serialize(palette) {
