@@ -33,10 +33,6 @@ const assetLibrary = {
     const canvas = new OffscreenCanvas(100, 100);
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
-    ctx.shadowOffsetX = 0
-    ctx.shadowOffsetY = 0
-    ctx.shadowBlur = 2
-    ctx.shadowColor = '#000';
     ctx.fillStyle = 'rgba(0, 0, 0, 0)';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 

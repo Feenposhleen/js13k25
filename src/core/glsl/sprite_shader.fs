@@ -7,5 +7,7 @@ uniform highp sampler2DArray uTexArray;
 out vec4 fragColor;
 
 void main(){
-  fragColor=texture(uTexArray, vec3(vUV, float(vLayer)));
+  vec4 s = texture(uTexArray, vec3(vUV, float(vLayer)));
+  if (s.a < .9) discard;
+  fragColor = s;
 }

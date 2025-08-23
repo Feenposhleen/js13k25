@@ -25,7 +25,7 @@ const createSprite = (
   angle: number = 0,
   z: number = 0,
 ): Sprite => {
-  let _updater: SpriteUpdater = (sprite, gameState, delta) => { };
+  let _updater: SpriteUpdater = (_, __, ___) => { };
 
   const _sprite = {
     _texture: texture,
