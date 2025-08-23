@@ -19,8 +19,8 @@ class Texture {
     return this;
   }
 
-  serialize() {
-    return [...this.polygons.map(polygon => polygon.serialize())];
+  serialize(palette) {
+    return [...this.polygons.map(polygon => polygon.serialize(palette))];
   }
 
   static deserialize(serializedData, palette) {

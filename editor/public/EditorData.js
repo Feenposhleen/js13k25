@@ -69,19 +69,9 @@ class EditorData {
       _textures: {},
     };
 
-    Object.keys(this.textures).forEach((textureName, idx) => {
+    Object.keys(this.textures).forEach((textureName) => {
       const texture = this.textures[textureName];
-      const polygons = [];
-
-      texture.polygons.forEach((polygon) => {
-        polygons.push([
-          this.palette.indexOf(polygon.color),
-          polygon.style,
-          ...polygon.points
-        ]);
-      });
-
-      output._textures[textureName] = polygons;
+      output._textures[textureName] = texture.serialize(this.palette);
     });
 
     return output;

@@ -63,6 +63,25 @@ function findGenRegion(content) {
   };
 }
 
+function toObjectLiteral(obj) {
+  if (obj === null) return 'null';
+  if (typeof obj === 'string') return `'${obj.replace(/'/g, "\\'")}'`;
+  if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+  if (Array.isArray(obj)) {
+    return `[${obj.map(toObjectLiteral).join(', ')}]`;
+  }
+  if (typeof obj === 'object') {
+    return `{ ${Object.entries(obj)
+      .map(([k, v]) => {
+        // Use identifier if valid, otherwise quote key
+        const key = /^[a-zA-Z_$][\w$]*$/.test(k) ? k : `'${k}'`;
+        return `${key}: ${toObjectLiteral(v)}`;
+      })
+      .join(', ')} }`;
+  }
+  return 'undefined';
+}
+
 const server = http.createServer((req, res) => {
   const parsed = url.parse(req.url || '', true);
   const pathname = parsed.pathname || '/';
@@ -86,7 +105,9 @@ const server = http.createServer((req, res) => {
       let parsedJson;
       try {
         const trimmed = region.inner.trim();
-        parsedJson = trimmed === '' ? {} : JSON.parse(trimmed);
+        const evaled = eval('(' + trimmed + ')');
+        const json = JSON.stringify(evaled);
+        parsedJson = trimmed === '' ? {} : JSON.parse(json);
       } catch (e) {
         send500(res, new Error('Invalid JSON inside GEN region: ' + e.message));
         return;
@@ -127,7 +148,7 @@ const server = http.createServer((req, res) => {
         return;
       }
 
-      const innerPretty = JSON.stringify(obj, null, 2); // pretty-printed with 2-space indent, no extra leading/trailing newlines
+      const innerLiteral = toObjectLiteral(obj); // pretty-printed with 2-space indent, no extra leading/trailing newlines
 
       // ensure destination directory exists
       fs.mkdir(path.dirname(DRAWABLES_PATH), { recursive: true }, (mkErr) => {
@@ -141,7 +162,7 @@ const server = http.createServer((req, res) => {
           if (rErr) {
             if (rErr.code === 'ENOENT') {
               // file doesn't exist -> create it with the GEN region
-              newContent = OPEN_MARKER + '\n' + innerPretty + '\n' + CLOSE_MARKER + '\n';
+              newContent = OPEN_MARKER + '\n' + innerLiteral + '\n' + CLOSE_MARKER + '\n';
             } else {
               send500(res, rErr);
               return;
@@ -150,12 +171,12 @@ const server = http.createServer((req, res) => {
             const region = findGenRegion(data);
             if (region) {
               // replace inner region; keep a newline between marker and content for readability,
-              // but the innerPretty itself has no leading/trailing blank lines
-              newContent = region.before + OPEN_MARKER + innerPretty + CLOSE_MARKER + region.after;
+              // but the innerLiteral itself has no leading/trailing blank lines
+              newContent = region.before + OPEN_MARKER + innerLiteral + CLOSE_MARKER + region.after;
             } else {
               // markers not found -> append them at the end with a separating newline
               const sep = data.endsWith('\n') ? '' : '\n';
-              newContent = data + sep + OPEN_MARKER + '\n' + innerPretty + '\n' + CLOSE_MARKER + '\n';
+              newContent = data + sep + OPEN_MARKER + '\n' + innerLiteral + '\n' + CLOSE_MARKER + '\n';
             }
           }
 

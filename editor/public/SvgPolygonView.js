@@ -25,6 +25,7 @@ class SvgPolygonView {
   }
 
   createCoords() {
+    this.coordsContainerEl.innerHTML = '';
     this.coords = [];
 
     for (var y = 0; y < SvgPolygonView.resolution; y++) {
@@ -75,15 +76,10 @@ class SvgPolygonView {
   }
 
   updatePolygons(newPolygons = null) {
-    if (newPolygons !== null) {
-      this.polygonElMap.keys().forEach((poly) => {
-        this.polygonElMap.get(poly).remove();
-        this.polygonElMap.delete(poly);
-      });
+    this.polysContainerEl.innerHTML = '';
 
-      this.polygons = newPolygons;
-      this.selectedPolygon = this.polygons.includes(this.selectedPolygon) ? this.selectedPolygon : null;
-    }
+    this.polygons = newPolygons || this.polygons;
+    this.selectedPolygon = this.polygons.includes(this.selectedPolygon) ? this.selectedPolygon : null;
 
     this.polygons.forEach((poly) => {
       this.polygonElMap.get(poly)?.remove();
