@@ -91,7 +91,6 @@ body {
 
 .button-container {
   padding: 2px;
-  cursor: pointer;
   display: flex;
   flex-direction: row;
   align-items: flex-end;
@@ -149,6 +148,7 @@ button.extra,
 #backgrounds {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
@@ -156,4 +156,18 @@ button.extra,
   width: 20px;
   height: 20px;
   border: 1px solid #888;
+}
+
+.panel {
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 10px;
+  background: #555;
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
 }

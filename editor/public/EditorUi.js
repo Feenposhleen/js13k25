@@ -10,6 +10,13 @@ class EditorAction {
   static RELOAD = 'reload';
 }
 
+class LayeringAction {
+  static UP = 'up';
+  static DOWN = 'down';
+  static TOP = 'top';
+  static BOTTOM = 'bottom';
+}
+
 class EditorUI {
   constructor({
     editorData,
@@ -18,6 +25,7 @@ class EditorUI {
     onModeSelected,
     onTextureSelected,
     onEditorDataUpdated,
+    onLayeringAction,
   }) {
     this.selectedMode = EditorMode.SELECT;
     this.selectedColor = editorData.palette[0] || '#000';
@@ -29,14 +37,17 @@ class EditorUI {
     this.onColorSelected = onColorSelected;
     this.onTextureSelected = onTextureSelected;
     this.onEditorDataUpdated = onEditorDataUpdated;
+    this.onLayeringAction = onLayeringAction;
 
     this.modesContainerEl = document.querySelector('#modes');
     this.actionsContainerEl = document.querySelector('#actions');
     this.colorsContainerEl = document.querySelector('#colors');
     this.texturesContainerEl = document.querySelector('#textures');
     this.backgroundsContainerEl = document.querySelector('#backgrounds');
+    this.layeringContainerEl = document.querySelector('#layering');
 
     this.updateModes();
+    this.updateLayering();
     this.updateBackgrounds();
     this.updateColors(editorData);
     this.updateActions();
@@ -57,6 +68,25 @@ class EditorUI {
         document.body.style.backgroundColor = bg;
       });
     });
+  }
+
+  updateLayering() {
+    this.clearElement(this.layeringContainerEl);
+
+    const actions = [
+      { text: '↑↑↑', classNames: ['layering', 'top'], action: LayeringAction.TOP },
+      { text: '↑', classNames: ['layering', 'up'], action: LayeringAction.UP },
+      { text: '↓', classNames: ['layering', 'down'], action: LayeringAction.DOWN },
+      { text: '↓↓↓', classNames: ['layering', 'bottom'], action: LayeringAction.BOTTOM },
+    ];
+
+    for (const action of actions) {
+      const button = this.createButton(action.text, action.classNames, () => {
+        this.onLayeringAction(action.action);
+        this.onEditorDataUpdated();
+      });
+      this.layeringContainerEl.appendChild(button);
+    }
   }
 
   updateModes() {
@@ -135,11 +165,11 @@ class EditorUI {
     });
 
     const addColorButton = this.createButton('+', ['add-color'], () => {
-      const newColor = prompt('Enter a new color (hex, rgb, etc.)', '#000000');
-      if (newColor) {
-        editorData.addColor(newColor);
-        this.updateColors(editorData);
-      }
+      const newColor = prompt('Enter a new color (hex, #000000)', '');
+      if (!/^#[0-9a-f]{6}$/i.test(newColor)) return;
+
+      editorData.addColor(newColor);
+      this.updateColors(editorData);
     });
     this.colorsContainerEl.appendChild(addColorButton);
   }
@@ -155,7 +185,9 @@ class EditorUI {
       }, [
         // Renaming
         ['✎', () => {
-          const newName = prompt('Enter a new name for the texture', texture.name);
+          const newName = prompt('Enter a valid name for the texture (e.g. "_name", "_another_name")', texture.name);
+          if (!/^_[a-z_]+$/.test(newName)) return;
+
           if (newName && newName !== texture.name) {
             editorData.renameTexture(texture.name, newName);
             this.updateTextures(editorData);
@@ -183,7 +215,9 @@ class EditorUI {
     });
 
     const addTextureButton = this.createButton('+', ['add-texture'], () => {
-      const newTextureName = prompt('Enter a name for the new texture', 'newTexture');
+      const newTextureName = prompt('Enter a valid name for the texture (e.g. "_name", "_another_name")', '');
+      if (!/^_[a-z_]+$/.test(newName)) return;
+
       if (newTextureName) {
         const newTexture = new Texture(newTextureName, []);
         editorData.addTexture(newTexture);

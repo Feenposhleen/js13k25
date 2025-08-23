@@ -10,7 +10,7 @@ class Texture {
   }
 
   removePolygon(polygon) {
-    this.polygons.splice(indexOf(polygon), 1);
+    this.polygons.splice(this.polygons.indexOf(polygon), 1);
     return this;
   }
 

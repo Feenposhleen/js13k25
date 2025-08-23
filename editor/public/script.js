@@ -21,7 +21,7 @@
 
   const load = (editorData) => {
     const polygonView = new SvgPolygonView({
-      initialPolygons: editorData.getTexture('triangle').polygons,
+      initialPolygons: editorData.textures[Object.keys(editorData.textures)[0]].polygons,
       onCoordClick: (coords, selectedPolygon) => {
         console.log(`Coordinate clicked: ${coords}, selectedPolygon: ${selectedPolygon}`);
 
@@ -102,6 +102,9 @@
       onModeSelected: (mode) => {
         console.log(`Mode selected: ${mode}`);
         editorUi.pendingMoveCoord = null;
+        if (mode === EditorMode.SELECT) {
+          polygonView.selectPolygon(null);
+        }
       },
       onColorSelected: (color) => {
         console.log(`Color selected: ${color}`);
@@ -117,6 +120,27 @@
       onEditorDataUpdated: () => {
         console.log('Editor data updated');
         polygonView.updatePolygons(editorUi.selectedTexture.polygons);
+      },
+      onLayeringAction: (action) => {
+        console.log(`Layering action: ${action}`);
+        if (!polygonView.selectedPolygon) return;
+
+        switch (action) {
+          case LayeringAction.UP:
+            polygonView.movePolygonZ(polygonView.selectedPolygon, 1);
+            break;
+          case LayeringAction.DOWN:
+            polygonView.movePolygonZ(polygonView.selectedPolygon, -1);
+            break;
+          case LayeringAction.TOP:
+            polygonView.movePolygonZ(polygonView.selectedPolygon, 9999);
+            break;
+          case LayeringAction.BOTTOM:
+            polygonView.movePolygonZ(polygonView.selectedPolygon, -9999);
+            break;
+        }
+
+        editorUi.onEditorDataUpdated();
       },
     });
   }

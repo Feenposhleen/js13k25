@@ -25,7 +25,7 @@ export default (update?: SceneUpdater | undefined) => {
   const _scene = {
     _paused: false,
     _done: false,
-    _rootSprite: createSprite(0, [0, 0]),
+    _rootSprite: createSprite(null, [0, 0]),
     _setUpdater: (updater: SceneUpdater) => _updater = updater,
     _update: (state: FullState, delta: number): void => {
       if (!_scene._paused) {

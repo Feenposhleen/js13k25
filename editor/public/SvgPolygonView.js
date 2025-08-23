@@ -63,15 +63,7 @@ class SvgPolygonView {
   }
 
   selectPolygon(polygon) {
-    if (this.selectedPolygon) {
-      this.polygonElMap.get(this.selectedPolygon).classList.remove('selected');
-    }
-
-    if (polygon) {
-      this.selectedPolygon = polygon;
-      this.polygonElMap.get(this.selectedPolygon).classList.add('selected');
-    }
-
+    this.selectedPolygon = polygon;
     this.updatePolygons(this.polygons);
   }
 
@@ -84,8 +76,13 @@ class SvgPolygonView {
     this.polygons.forEach((poly) => {
       this.polygonElMap.get(poly)?.remove();
       const el = this.renderPolygon(poly);
+      if (poly === this.selectedPolygon) {
+        el.classList.add('selected');
+      }
       this.polygonElMap.set(poly, el);
     });
+
+    this.highlightPolygonCoords(this.selectedPolygon);
   }
 
   highlightPolygonCoords(polygon) {
@@ -95,12 +92,26 @@ class SvgPolygonView {
       });
     });
 
+    if (!polygon) return;
     for (let i = 0; i < polygon.points.length; i += 2) {
       const x = polygon.points[i];
       const y = polygon.points[i + 1];
       const coordEl = this.coords[y][x];
       coordEl.classList.add('active');
     }
+  }
+
+  movePolygonZ(polygon, delta) {
+    const idx = this.polygons.indexOf(polygon);
+    if (idx === -1) return;
+
+    const newIdx = Math.min(Math.max(0, idx + delta), this.polygons.length - 1);
+    if (newIdx === idx) return;
+
+    this.polygons.splice(idx, 1);
+    this.polygons.splice(newIdx, 0, polygon);
+
+    this.updatePolygons(this.polygons);
   }
 
   renderPolygon(polygon) {

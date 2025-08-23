@@ -7,6 +7,7 @@ import postNoopFs from './glsl/post_noop.fs';
 import Utils from './utils';
 import { Sprite } from './sprite';
 import AssetLibrary from './asset_library';
+import assetLibrary from './asset_library';
 
 export type RenderTarget = { fb: WebGLFramebuffer | null; tex: WebGLTexture | null; width: number; height: number };
 
@@ -37,7 +38,7 @@ export const _buildRenderData = (sprites: Sprite[]) => {
     const clipMat = Utils._mat3Multiply(new Float32Array(9), pxToClip, worldWithTex);
 
     if (sprite._texture !== null) {
-      flat.push({ mat: clipMat, z, layer: sprite._texture });
+      flat.push({ mat: clipMat, z, layer: assetLibrary._textureIndex(sprite._texture) });
     }
 
     if (sprite._children) for (const c of sprite._children) walk(c, world);

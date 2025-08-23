@@ -1,24 +1,26 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
 
 const assetLibrary = {
+  _textures: drawables._textures,
   _textureCache: new Map<string, ImageData>(),
-  _textureNameIndexCache: new Map<string, number>(),
-  _textureIndexNameCache: new Map<number, string>(),
+  _textureDataMap: new Map<number[][], number>(),
 
   async _preRenderTextures(): Promise<void> {
     let i = 0;
 
-    for (const textureKey of Object.keys(drawables._textures)) {
+    Object.keys(assetLibrary._textures).forEach((key) => {
+      assetLibrary._textureDataMap.set((drawables._textures as any)[key], i);
+    });
+
+    for (const textureKey of Object.keys(assetLibrary._textures)) {
       this._textureCache.set(
         textureKey,
         await this._preRenderTexture(
           (drawables as RawDrawableData)._palette,
-          drawables._textures[textureKey],
+          (drawables._textures as any)[textureKey],
         ),
       );
 
-      this._textureNameIndexCache.set(textureKey, i);
-      this._textureIndexNameCache.set(i, textureKey);
       i++;
     }
   },
@@ -63,20 +65,8 @@ const assetLibrary = {
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
   },
 
-  _getTexture(name: string): ImageData | undefined {
-    return this._textureCache.get(name);
-  },
-
-  _getTextureIndex(name: string): number {
-    return this._textureNameIndexCache.get(name)!;
-  },
-
-  _getTextureName(index: number): string {
-    return this._textureIndexNameCache.get(index)!;
-  },
-
-  _getTextureByIndex(index: number): ImageData {
-    return this._textureCache.get(this._textureIndexNameCache.get(index)!)!;
+  _textureIndex(data: number[][]): number {
+    return this._textureDataMap.get(data)!;
   },
 };
 
