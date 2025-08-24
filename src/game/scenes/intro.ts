@@ -19,18 +19,14 @@ export default () => {
       anchorSprite._position[0] += 100 * delta;
     }
 
-    if (state.input._pointer._down) {
-      anchorSprite._position = state.input._pointer._coord;
-    }
-
     _ticks += delta;
   });
 
   const anchorSprite = createSprite(null, [300, 200]);
 
 
-  const tableSprite = createSprite(assetLibrary._textures._table, [-20, 150], [2.5, 1.3]);
-  const roomSprite = createSprite(assetLibrary._textures._room, [0, 30], [3, 2]);
+  const tableSprite = createSprite(assetLibrary._textures._table, [0, 135], [2.2, 1.6]);
+  const roomSprite = createSprite(assetLibrary._textures._room, [0, 30], [2.5, 2.5]);
 
   const cat = createCat();
 
