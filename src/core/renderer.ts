@@ -29,8 +29,7 @@ export const _buildRenderData = (sprites: Sprite[]) => {
     let local = Utils._mat3FromTRS(x, y, angle, sx, sy);
     const world = parentMat ? Utils._mat3Multiply(new Float32Array(9), parentMat, local) : local;
 
-    // TODO: Replace with global sprite size / 2
-    const texHalf = 50;
+    const texHalf = assetLibrary._dimensions / 2;
     const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
 
     const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
@@ -159,7 +158,8 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     if (!images.length) return null;
 
     // TODO: Replace with global sprite size
-    const w = 100, h = 100, layers = images.length;
+    const size = assetLibrary._dimensions;
+    const layers = images.length;
 
     const tex = createTexture();
     activeTexture(gl.TEXTURE0);
@@ -168,13 +168,13 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MAG_FILTER, NEAREST);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, CLAMP_TO_EDGE);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, CLAMP_TO_EDGE);
-    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, w, h, layers, 0, RGBA, UNSIGNED_BYTE, null);
+    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, size, size, layers, 0, RGBA, UNSIGNED_BYTE, null);
 
     for (let i = 0; i < layers; i++) {
-      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, w, h, 1, RGBA, UNSIGNED_BYTE, images[i]);
+      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, size, size, 1, RGBA, UNSIGNED_BYTE, images[i]);
     }
 
-    return { tex, width: w, height: h, layers };
+    return { tex, width: size, height: size, layers };
   };
 
   const runPostChain = (srcTex: WebGLTexture | null, width: number, height: number) => {

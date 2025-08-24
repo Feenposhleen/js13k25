@@ -1,6 +1,7 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
 
 const assetLibrary = {
+  _dimensions: 256,
   _textures: drawables._textures,
   _textureCache: new Map<string, ImageData>(),
   _textureDataMap: new Map<number[][], number>(),
@@ -8,9 +9,6 @@ const assetLibrary = {
   async _preRenderTextures(): Promise<void> {
     let i = 0;
 
-    Object.keys(assetLibrary._textures).forEach((key) => {
-      assetLibrary._textureDataMap.set((drawables._textures as any)[key], i);
-    });
 
     for (const textureKey of Object.keys(assetLibrary._textures)) {
       this._textureCache.set(
@@ -30,7 +28,7 @@ const assetLibrary = {
     textureData: number[][],
   ): Promise<ImageData> {
     // TODO: Replace with global sprite size
-    const canvas = new OffscreenCanvas(100, 100);
+    const canvas = new OffscreenCanvas(this._dimensions, this._dimensions);
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = 'rgba(0, 0, 0, 0)';
@@ -62,6 +60,12 @@ const assetLibrary = {
   },
 
   _textureIndex(data: number[][]): number {
+    if (this._textureDataMap.size === 0) {
+      Object.keys(this._textures).forEach((key, i) => {
+        this._textureDataMap.set((drawables._textures as any)[key], i);
+      });
+    }
+
     return this._textureDataMap.get(data)!;
   },
 };

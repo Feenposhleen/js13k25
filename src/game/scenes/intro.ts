@@ -27,13 +27,27 @@ export default () => {
 
   const anchorSprite = createSprite(null, [300, 200]);
 
-  const childSprite = createSprite(
-    assetLibrary._textures._table,
-    [0, 10],
-    [2, 2],
+  const catSprite = createSprite(
+    assetLibrary._textures._catface,
+    [0, -20],
+    [0.4, 0.4],
   );
 
-  anchorSprite._addChild(childSprite);
+  const tableSprite = createSprite(
+    assetLibrary._textures._table,
+    [-20, 150],
+    [2.5, 1.3],
+  );
+
+  const roomSprite = createSprite(
+    assetLibrary._textures._room,
+    [0, 30],
+    [3, 2],
+  );
+
+  anchorSprite._addChild(roomSprite);
+  anchorSprite._addChild(catSprite);
+  anchorSprite._addChild(tableSprite);
 
   introScene._rootSprite._addChild(anchorSprite);
   return introScene;

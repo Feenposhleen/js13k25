@@ -235,7 +235,7 @@ class EditorUI {
 
     const addTextureButton = this.createButton('+', ['add-texture'], () => {
       const newTextureName = prompt('Enter a valid name for the texture (e.g. "_name", "_another_name")', '');
-      if (!/^_[a-z_]+$/.test(newName)) return;
+      if (!/^_[a-z_]+$/.test(newTextureName)) return;
 
       if (newTextureName) {
         const newTexture = new Texture(newTextureName, []);
