@@ -1,6 +1,6 @@
 import AssetLibrary from "./asset_library";
 import { TransferDataFromWorker } from "./game_worker";
-import createRenderer, { Renderer } from "./renderer";
+import createRenderer, { BYTES_PER_INSTANCE, FLOATS_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
 import createMiniSequencer, { MiniSequencer } from "./sound";
 import utils, { Vec } from "./utils";
 
@@ -10,52 +10,77 @@ export type Pointer = {
   buttonIndex?: number;
 }
 
-export type TransferDataFromWindow = {
+export type InputState = {
   _keys: Record<string, boolean>;
   _pointer: Pointer;
 }
 
+export type TransferDataFromWindow = {
+  _freeRenderBuffer: Float32Array;
+  _input: InputState;
+}
+
 const createGameWindow = () => {
-  const _keysDown: Record<string, boolean> = {};
+  // Elements
   const _canvas = utils.$('#c') as HTMLCanvasElement;
   const scriptContent = (utils.$('#j') as HTMLScriptElement).innerHTML;
   const _jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
   const _worker: Worker = new Worker(_jsUrl);
   const playButton = utils.$('#p') as HTMLDivElement;
+
+  // Input
+  let _pointer: Pointer = { _coord: [0, 0], _down: false };
+  let _keysDown: Record<string, boolean> = {};
+  let _keyTaps: Record<string, boolean> = {};
+
+  // Rendering
   let _pixelMultiplier = 1;
   let _renderer: Renderer | null = null;
-  let _pendingFrame: Float32Array | null = null;
-  let _transferData: TransferDataFromWindow = { _keys: {}, _pointer: { _coord: [0, 0], _down: false } };
+  let _freeRenderBuffer: Float32Array | null = new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE);
+  let _pendingRenderBuffer: Float32Array | null = null;
+  let _pendingSpriteCount: number = 0;
+
+  // Audio
   let _music: MiniSequencer | null = null;
   let _sfx: MiniSequencer | null = null;
 
-  const _requestNewFrame = () => {
-    _worker.postMessage(_transferData);
-    _transferData._keys = _keysDown;
+  const _requestNewFrame = (freeRenderBuffer: Float32Array) => {
+    const transferData: TransferDataFromWindow = {
+      _freeRenderBuffer: freeRenderBuffer,
+      _input: {
+        _keys: { ..._keyTaps, ..._keysDown },
+        _pointer: _pointer,
+      },
+    }
+    _worker.postMessage(transferData, [freeRenderBuffer.buffer]);
+    _keyTaps = {};
   };
 
   const _receiveFrame = (data: TransferDataFromWorker) => {
-    _pendingFrame = data.renderArray;
+    if (data.renderArray) {
+      _pendingRenderBuffer = data.renderArray;
+      _pendingSpriteCount = data.spriteCount;
+    }
   };
 
   const _wireInput = () => {
     window.onpointermove = (ev: PointerEvent) => {
-      _transferData._pointer._coord = [
+      _pointer._coord = [
         ev.clientX / _pixelMultiplier,
         ev.clientY / _pixelMultiplier,
       ];
     };
 
     window.onpointerdown = (ev: PointerEvent) => {
-      _transferData._pointer._down = true;
+      _pointer._down = true;
     };
 
     window.onpointerup = (ev: PointerEvent) => {
-      _transferData._pointer._down = false;
+      _pointer._down = false;
     };
 
     window.addEventListener('keydown', (ev) => {
-      _transferData._keys[ev.key] = true;
+      _keyTaps[ev.key] = true;
       _keysDown[ev.key] = true;
     });
 
@@ -65,11 +90,18 @@ const createGameWindow = () => {
   };
 
   const _renderLoop = () => {
-    if (_pendingFrame) {
-      _requestNewFrame();
-      _renderer!._draw(_pendingFrame);
-      _pendingFrame = null;
+    if (_freeRenderBuffer) {
+      _requestNewFrame(_freeRenderBuffer);
+      _freeRenderBuffer = null;
     }
+
+    if (_pendingRenderBuffer) {
+      _renderer!._draw(_pendingRenderBuffer, _pendingSpriteCount);
+      _freeRenderBuffer = _pendingRenderBuffer;
+      _pendingRenderBuffer = null;
+      _pendingSpriteCount = 0;
+    }
+
     requestAnimationFrame(_renderLoop);
   };
 
@@ -111,7 +143,7 @@ const createGameWindow = () => {
     // });
 
     _renderer = createRenderer(_canvas);
-    _requestNewFrame();
+    _requestNewFrame(new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE));
     _renderLoop();
   };
 

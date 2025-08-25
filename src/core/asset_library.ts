@@ -1,14 +1,13 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
+import { RENDERER_SPRITE_SIZE } from "./renderer";
 
 const assetLibrary = {
-  _dimensions: 256,
   _textures: drawables._textures,
   _textureCache: new Map<string, ImageData>(),
   _textureDataMap: new Map<number[][], number>(),
 
   async _preRenderTextures(): Promise<void> {
     let i = 0;
-
 
     for (const textureKey of Object.keys(assetLibrary._textures)) {
       this._textureCache.set(
@@ -27,8 +26,7 @@ const assetLibrary = {
     palette: string[],
     textureData: number[][],
   ): Promise<ImageData> {
-    // TODO: Replace with global sprite size
-    const canvas = new OffscreenCanvas(this._dimensions, this._dimensions);
+    const canvas = new OffscreenCanvas(RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE);
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = 'rgba(0, 0, 0, 0)';

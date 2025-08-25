@@ -1,43 +1,50 @@
-import { TransferDataFromWindow } from "./game_window";
-import { _buildRenderData, Renderer } from "./renderer";
+import { InputState, TransferDataFromWindow } from "./game_window";
+import { _buildRenderData, BYTES_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
 import { Scene } from "./scene";
+import { Vec } from "./utils";
 
 export type TransferDataFromWorker = {
   renderArray: Float32Array;
+  spriteCount: number;
 }
+
+export const defaultWorkerTransferData = (): TransferDataFromWorker => ({
+  renderArray: new Float32Array(MAX_SPRITE_COUNT * BYTES_PER_INSTANCE),
+  spriteCount: 0,
+});
 
 export type FullState = {
   game: GameWorker;
   state: GameState;
-  input: TransferDataFromWindow;
+  input: InputState;
 }
 
 const createGameWorker = () => {
+  let _freeRenderBuffer: Float32Array | null = null;
   const _sceneRemoveList = new Set<Scene>();
   var _gameState: GameState | undefined;
   var _sceneTree: Scene[] = [];
-  var _dataFromWindow: TransferDataFromWindow = { _keys: {}, _pointer: { _coord: [0, 0], _down: false } };
+  var _keys: Record<string, boolean> = {};
+  var _pointer = { _coord: <Vec>[0, 0], _down: false };
   var _lastTs: number = 0;
   var _state: FullState | undefined = undefined;
+  var _input: InputState = { _keys: _keys, _pointer: _pointer };
 
   self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
-    _dataFromWindow = data;
-    _updateGame();
+    _updateGame(data._freeRenderBuffer);
   };
 
-  const _updateWindow = (renderData: Float32Array) => {
-    const data: TransferDataFromWorker = { renderArray: renderData };
-    (self as any).postMessage(data, [renderData.buffer]);
+  const _updateWindow = (renderBuffer: Float32Array, spriteCount: number) => {
+    const data: TransferDataFromWorker = { renderArray: renderBuffer, spriteCount };
+    (self as any).postMessage(data, [renderBuffer.buffer]);
   };
 
-  const _updateGame = async () => {
+  const _updateGame = async (renderBuffer: Float32Array) => {
     if (!_state) return;
 
     const now = performance.now();
     const delta = (now - _lastTs) / 1000;
     _lastTs = now;
-
-    _state.input = _dataFromWindow;
 
     if (!_sceneTree.length) return;
     for (const scene of _sceneTree) {
@@ -53,8 +60,8 @@ const createGameWorker = () => {
       rootSprites.push(scene._rootSprite);
     }
 
-    const renderData = _buildRenderData(rootSprites);
-    _updateWindow(renderData);
+    const spriteCount = _buildRenderData(rootSprites, renderBuffer);
+    _updateWindow(renderBuffer, spriteCount);
   };
 
   const gameWorker = {
@@ -62,7 +69,7 @@ const createGameWorker = () => {
       _state = {
         game: gameWorker,
         state: initialState,
-        input: _dataFromWindow,
+        input: _input,
       };
 
       gameWorker._pushScene(initialScene);

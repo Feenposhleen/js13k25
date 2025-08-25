@@ -11,8 +11,8 @@ export type Sprite = {
   _opacity: number;
   _z: number;
   _children: Sprite[];
+  _updater: SpriteUpdater;
   _update: (state: FullState, dt: number) => void;
-  _setUpdater: (updater: SpriteUpdater) => void;
   _addChild: (sprite: Sprite) => void;
   _removeChild: (sprite: Sprite) => void;
 };
@@ -25,9 +25,7 @@ const createSprite = (
   angle: number = 0,
   z: number = 0,
 ): Sprite => {
-  let _updater: SpriteUpdater = (_, __, ___) => { };
-
-  const _sprite = {
+  const _sprite: Sprite = {
     _texture: texture,
     _position: position,
     _scale: scale,
@@ -35,6 +33,7 @@ const createSprite = (
     _opacity: opacity,
     _z: z,
     _children: [] as Sprite[],
+    _updater: () => { },
 
     _addChild: (sprite: Sprite): void => {
       _sprite._children.push(sprite);
@@ -47,9 +46,7 @@ const createSprite = (
       }
     },
 
-    _setUpdater: (updater: SpriteUpdater) => _updater = updater,
-
-    _update: (state: FullState, delta: number): void => _updater(_sprite, state, delta),
+    _update: (state: FullState, delta: number): void => _sprite._updater(_sprite, state, delta),
   }
 
   return _sprite;

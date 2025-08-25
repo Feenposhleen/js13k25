@@ -1,8 +1,9 @@
 import { Game } from "../core/game";
 import createIntroScene from "./scenes/intro";
+import { createStressScene } from "./scenes/stress";
 
-const game = new Game(
-  createIntroScene(),
+new Game(
+  createStressScene(),
   {
     _done: false,
     _paused: false,

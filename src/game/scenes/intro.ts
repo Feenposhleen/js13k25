@@ -22,11 +22,10 @@ export default () => {
     _ticks += delta;
   });
 
-  const anchorSprite = createSprite(null, [300, 200]);
+  const anchorSprite = createSprite(null, [0.5, 0.5]);
 
-
-  const tableSprite = createSprite(assetLibrary._textures._table, [0, 135], [2.2, 1.6]);
-  const roomSprite = createSprite(assetLibrary._textures._room, [0, 30], [2.5, 2.5]);
+  const tableSprite = createSprite(assetLibrary._textures._table, [0, -0.05], [1.6, 1.6]);
+  const roomSprite = createSprite(assetLibrary._textures._room, [0.1, -0.25], [3, 3]);
 
   const cat = createCat();
 

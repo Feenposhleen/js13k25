@@ -8,6 +8,6 @@ out vec4 fragColor;
 
 void main(){
   vec4 s = texture(uTexArray, vec3(vUV, float(vLayer)));
-  if (s.a < .95) discard;
+  if (s.a < .9) discard;
   fragColor = s;
 }

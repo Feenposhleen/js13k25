@@ -6,62 +6,72 @@ import postNoopFs from './glsl/post_noop.fs';
 
 import Utils from './utils';
 import { Sprite } from './sprite';
-import AssetLibrary from './asset_library';
 import assetLibrary from './asset_library';
+
+export const RENDERER_WIDTH = 1200;
+export const RENDERER_HEIGHT = 720;
+export const RENDERER_ASPECT = RENDERER_WIDTH / RENDERER_HEIGHT;
+export const RENDERER_LARGEST = Math.max(RENDERER_WIDTH, RENDERER_HEIGHT);
+export const RENDERER_SPRITE_SIZE = 512;
+export const MAX_SPRITE_COUNT = 10000;
+export const FLOATS_PER_INSTANCE = 10; // mat3 (9) + layer (1)
+export const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 
 export type RenderTarget = { fb: WebGLFramebuffer | null; tex: WebGLTexture | null; width: number; height: number };
 
-const FLOATS_PER_INSTANCE = 10; // mat3 (9) + layer (1)
-const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
+type RenderDataItem = { mat: Float32Array; z: number; layer: number };
 
-export const _buildRenderData = (sprites: Sprite[]) => {
+const _renderDataWalk = (sprite: Sprite, parentMat: Float32Array | null, resultOut: Array<RenderDataItem> = []): Array<RenderDataItem> => {
+  const x = sprite._position[0]!;
+  const y = sprite._position[1]!;
+  const angle = sprite._angle || 0;
+  const z = sprite._z;
+
+  const sx = sprite._scale[0];
+  const sy = sprite._scale[1];
+
+  let local = Utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy);
+  const world = parentMat ? Utils._mat3Multiply(new Float32Array(9), parentMat, local) : local;
+
+  const texHalf = RENDERER_SPRITE_SIZE / 2;
+  const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
+
+  const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
+  const pxToClip = new Float32Array([2 / RENDERER_WIDTH, 0, 0, 0, -2 / RENDERER_HEIGHT, 0, -1, 1, 1]);
+  const clipMat = Utils._mat3Multiply(new Float32Array(9), pxToClip, worldWithTex);
+
+  if (sprite._texture !== null) {
+    resultOut.push({ mat: clipMat, z, layer: assetLibrary._textureIndex(sprite._texture) });
+  }
+
+  if (sprite._children) for (const c of sprite._children) _renderDataWalk(c, world, resultOut);
+
+  return resultOut;
+};
+
+export const _buildRenderData = (sprites: Sprite[], outRenderBuffer: Float32Array): number => {
   const flat: { mat: Float32Array; z: number; layer: number }[] = [];
-
-  const walk = (sprite: Sprite, parentMat: Float32Array | null) => {
-    const x = sprite._position[0]!;
-    const y = sprite._position[1]!;
-    const angle = sprite._angle || 0;
-    const z = sprite._z;
-
-    const sx = sprite._scale[0];
-    const sy = sprite._scale[1];
-
-    let local = Utils._mat3FromTRS(x, y, angle, sx, sy);
-    const world = parentMat ? Utils._mat3Multiply(new Float32Array(9), parentMat, local) : local;
-
-    const texHalf = assetLibrary._dimensions / 2;
-    const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
-
-    const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
-    const pxToClip = new Float32Array([2 / 600, 0, 0, 0, -2 / 400, 0, -1, 1, 1]);
-    const clipMat = Utils._mat3Multiply(new Float32Array(9), pxToClip, worldWithTex);
-
-    if (sprite._texture !== null) {
-      flat.push({ mat: clipMat, z, layer: assetLibrary._textureIndex(sprite._texture) });
-    }
-
-    if (sprite._children) for (const c of sprite._children) walk(c, world);
-  };
-
-  for (const s of sprites) walk(s, null);
+  for (const s of sprites) _renderDataWalk(s, null, flat);
   flat.sort((a, b) => a.z - b.z);
 
-  const data = new Float32Array(flat.length * FLOATS_PER_INSTANCE);
   let i = 0;
   for (const s of flat) {
-    data[i++] = s.mat[0]; data[i++] = s.mat[1]; data[i++] = s.mat[2];
-    data[i++] = s.mat[3]; data[i++] = s.mat[4]; data[i++] = s.mat[5];
-    data[i++] = s.mat[6]; data[i++] = s.mat[7]; data[i++] = s.mat[8];
-    data[i++] = s.layer | 0;
+    outRenderBuffer[i++] = s.mat[0]; outRenderBuffer[i++] = s.mat[1]; outRenderBuffer[i++] = s.mat[2];
+    outRenderBuffer[i++] = s.mat[3]; outRenderBuffer[i++] = s.mat[4]; outRenderBuffer[i++] = s.mat[5];
+    outRenderBuffer[i++] = s.mat[6]; outRenderBuffer[i++] = s.mat[7]; outRenderBuffer[i++] = s.mat[8];
+    outRenderBuffer[i++] = s.layer | 0;
   }
-  return data;
+
+  return flat.length;
 };
 
 export const createRenderer = (canvas: HTMLCanvasElement) => {
-  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext | null;
-  if (!gl) throw new Error("WebGL2 required");
+  canvas.width = RENDERER_WIDTH;
+  canvas.height = RENDERER_HEIGHT;
 
-  // WebGL context methods for minification
+  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+
+  // WebGL props for minification
   const attachShader = gl.attachShader.bind(gl);
   const createBuffer = gl.createBuffer.bind(gl);
   const bindBuffer = gl.bindBuffer.bind(gl);
@@ -79,7 +89,6 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   const activeTexture = gl.activeTexture.bind(gl);
   const texImage3D = gl.texImage3D.bind(gl);
   const viewport = gl.viewport.bind(gl);
-
   const TEXTURE_2D = gl.TEXTURE_2D;
   const TEXTURE_2D_ARRAY = gl.TEXTURE_2D_ARRAY;
   const TEXTURE_MAG_FILTER = gl.TEXTURE_MAG_FILTER;
@@ -93,7 +102,6 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   const ARRAY_BUFFER = gl.ARRAY_BUFFER;
   const TRIANGLE_STRIP = gl.TRIANGLE_STRIP;
 
-  // small GL helpers (inner so they can capture `gl`)
   const _compileShader = (type: number, src: string) => {
     const sh = gl.createShader(type)!;
     gl.shaderSource(sh, src);
@@ -153,13 +161,9 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-  const loadTextureArray = () => {
-    const images = [...AssetLibrary._textureCache.values()];
+  const _reloadTextures = () => {
+    const images = [...assetLibrary._textureCache.values()];
     if (!images.length) return null;
-
-    // TODO: Replace with global sprite size
-    const size = assetLibrary._dimensions;
-    const layers = images.length;
 
     const tex = createTexture();
     activeTexture(gl.TEXTURE0);
@@ -168,13 +172,13 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MAG_FILTER, NEAREST);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, CLAMP_TO_EDGE);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, CLAMP_TO_EDGE);
-    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, size, size, layers, 0, RGBA, UNSIGNED_BYTE, null);
+    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE, images.length, 0, RGBA, UNSIGNED_BYTE, null);
 
-    for (let i = 0; i < layers; i++) {
-      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, size, size, 1, RGBA, UNSIGNED_BYTE, images[i]);
+    for (let i = 0; i < images.length; i++) {
+      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE, 1, RGBA, UNSIGNED_BYTE, images[i]);
     }
 
-    return { tex, width: size, height: size, layers };
+    return { tex, width: RENDERER_SPRITE_SIZE, height: RENDERER_SPRITE_SIZE, layers: images.length };
   };
 
   const runPostChain = (srcTex: WebGLTexture | null, width: number, height: number) => {
@@ -194,10 +198,7 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     }
   };
 
-  // initial texture array load (if assets ready)
-  loadTextureArray();
-
-  const _draw = (drawData: Float32Array) => {
+  const _draw = (drawData: Float32Array, spriteCount: number) => {
     bindBuffer(ARRAY_BUFFER, instanceBuffer);
     bufferData(ARRAY_BUFFER, drawData, gl.DYNAMIC_DRAW);
     useProgram(spriteProgram);
@@ -208,16 +209,17 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const instanceCount = drawData.length / FLOATS_PER_INSTANCE;
-    gl.drawArraysInstanced(TRIANGLE_STRIP, 0, 4, instanceCount);
+    gl.drawArraysInstanced(TRIANGLE_STRIP, 0, 4, spriteCount);
 
     runPostChain(targetA.tex, targetA.width, targetA.height);
   };
 
-  // public API
+  // initial texture array load (if assets ready)
+  _reloadTextures();
+
   return {
     _draw,
-    _reloadTextures: loadTextureArray,
+    _reloadTextures,
     _buildRenderData,
   };
 };
