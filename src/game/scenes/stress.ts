@@ -19,7 +19,7 @@ export const createStressScene = () => {
     cat._updater = ((sprite, state, delta) => {
       oldUpdater(sprite, state, delta);
       sprite._position[0] = 0.5 * Math.sin(_ticks * 0.5 + i);
-      sprite._position[1] = 0.1 * Math.cos(_ticks * 0.5 + i * 1.1) - 0.3;
+      sprite._position[1] = 0.5 * Math.cos(_ticks * 0.5 + i * 1.1) - 0.3;
       sprite._angle = 0.1 * Math.sin(_ticks * 2 + i);
     });
 

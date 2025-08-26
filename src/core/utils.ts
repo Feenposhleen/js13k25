@@ -86,11 +86,10 @@ const utils = {
     return out;
   },
 
-  _mat3FromTRS: (tx: number, ty: number, angle: number, sx: number, sy: number) => {
+  _mat3FromTRS: (tx: number, ty: number, angle: number, sx: number, sy: number, out: Float32Array) => {
     const c = Math.cos(angle || 0), s = Math.sin(angle || 0);
     const r00 = c * sx, r10 = s * sx;
     const r01 = -s * sy, r11 = c * sy;
-    const out = new Float32Array(9);
     out[0] = r00; out[1] = r10; out[2] = 0;
     out[3] = r01; out[4] = r11; out[5] = 0;
     out[6] = tx; out[7] = ty; out[8] = 1;

@@ -9,12 +9,12 @@ export type Sprite = {
   _scale: Vec;
   _angle: number;
   _opacity: number;
-  _z: number;
   _children: Sprite[];
   _updater: SpriteUpdater;
   _update: (state: FullState, dt: number) => void;
   _addChild: (sprite: Sprite) => void;
   _removeChild: (sprite: Sprite) => void;
+  ___r?: Array<Float32Array>
 };
 
 const createSprite = (
@@ -23,7 +23,6 @@ const createSprite = (
   scale: Vec = [1, 1],
   opacity: number = 1,
   angle: number = 0,
-  z: number = 0,
 ): Sprite => {
   const _sprite: Sprite = {
     _texture: texture,
@@ -31,7 +30,6 @@ const createSprite = (
     _scale: scale,
     _angle: angle,
     _opacity: opacity,
-    _z: z,
     _children: [] as Sprite[],
     _updater: () => { },
 

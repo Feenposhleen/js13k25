@@ -1,5 +1,5 @@
 import { InputState, TransferDataFromWindow } from "./game_window";
-import { _buildRenderData, BYTES_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
+import { _buildRenderData, BYTES_PER_INSTANCE, FLOATS_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
 import { Scene } from "./scene";
 import { Vec } from "./utils";
 
@@ -9,7 +9,7 @@ export type TransferDataFromWorker = {
 }
 
 export const defaultWorkerTransferData = (): TransferDataFromWorker => ({
-  renderArray: new Float32Array(MAX_SPRITE_COUNT * BYTES_PER_INSTANCE),
+  renderArray: new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE),
   spriteCount: 0,
 });
 
@@ -55,12 +55,7 @@ const createGameWorker = () => {
       if (scene._done) { _sceneRemoveList.add(scene); }
     }
 
-    const rootSprites = [];
-    for (const scene of _sceneTree) {
-      rootSprites.push(scene._rootSprite);
-    }
-
-    const spriteCount = _buildRenderData(rootSprites, renderBuffer);
+    const spriteCount = _buildRenderData(_sceneTree.map((scene) => scene._rootSprite), renderBuffer);
     _updateWindow(renderBuffer, spriteCount);
   };
 

@@ -19,50 +19,63 @@ export const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 
 export type RenderTarget = { fb: WebGLFramebuffer | null; tex: WebGLTexture | null; width: number; height: number };
 
-type RenderDataItem = { mat: Float32Array; z: number; layer: number };
+type RenderDataItem = { mat: Float32Array; layer: number };
 
-const _renderDataWalk = (sprite: Sprite, parentMat: Float32Array | null, resultOut: Array<RenderDataItem> = []): Array<RenderDataItem> => {
+const _walkBuffer: Array<RenderDataItem> = [];
+const _walkView: Array<RenderDataItem> = [];
+const texHalf = RENDERER_SPRITE_SIZE / 2;
+const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
+const pxToClip = new Float32Array([2 / RENDERER_WIDTH, 0, 0, 0, -2 / RENDERER_HEIGHT, 0, -1, 1, 1]);
+const worldWithTexBuffer = new Float32Array(9);
+const worldBuffer = new Float32Array(9);
+
+const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => {
   const x = sprite._position[0]!;
   const y = sprite._position[1]!;
   const angle = sprite._angle || 0;
-  const z = sprite._z;
 
   const sx = sprite._scale[0];
   const sy = sprite._scale[1];
 
-  let local = Utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy);
-  const world = parentMat ? Utils._mat3Multiply(new Float32Array(9), parentMat, local) : local;
-
-  const texHalf = RENDERER_SPRITE_SIZE / 2;
-  const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
-
-  const worldWithTex = Utils._mat3Multiply(new Float32Array(9), world, texScale);
-  const pxToClip = new Float32Array([2 / RENDERER_WIDTH, 0, 0, 0, -2 / RENDERER_HEIGHT, 0, -1, 1, 1]);
-  const clipMat = Utils._mat3Multiply(new Float32Array(9), pxToClip, worldWithTex);
-
-  if (sprite._texture !== null) {
-    resultOut.push({ mat: clipMat, z, layer: assetLibrary._textureIndex(sprite._texture) });
+  if (!sprite.___r) {
+    sprite.___r = [
+      new Float32Array(9),
+      new Float32Array(9),
+      new Float32Array(9),
+    ]
   }
 
-  if (sprite._children) for (const c of sprite._children) _renderDataWalk(c, world, resultOut);
+  let local = Utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy, sprite.___r[0]);
+  const world = parentMat ? Utils._mat3Multiply(sprite.___r[1], parentMat, local) : local;
+  const worldWithTex = Utils._mat3Multiply(sprite.___r[2], sprite.___r[1], texScale);
 
-  return resultOut;
+  if (sprite._texture !== null) {
+    const obj = _walkBuffer[_walkView.length] || {};
+    _walkBuffer[_walkView.length] = obj;
+
+    obj.mat = Utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
+    obj.layer = assetLibrary._textureIndex(sprite._texture);
+    _walkView.push(obj);
+  }
+
+  if (sprite._children) for (const c of sprite._children) {
+    _fillWalkView(c, world);
+  }
 };
 
 export const _buildRenderData = (sprites: Sprite[], outRenderBuffer: Float32Array): number => {
-  const flat: { mat: Float32Array; z: number; layer: number }[] = [];
-  for (const s of sprites) _renderDataWalk(s, null, flat);
-  flat.sort((a, b) => a.z - b.z);
+  _walkView.length = 0;
+  for (const s of sprites) _fillWalkView(s, null);
 
   let i = 0;
-  for (const s of flat) {
+  for (const s of _walkView) {
     outRenderBuffer[i++] = s.mat[0]; outRenderBuffer[i++] = s.mat[1]; outRenderBuffer[i++] = s.mat[2];
     outRenderBuffer[i++] = s.mat[3]; outRenderBuffer[i++] = s.mat[4]; outRenderBuffer[i++] = s.mat[5];
     outRenderBuffer[i++] = s.mat[6]; outRenderBuffer[i++] = s.mat[7]; outRenderBuffer[i++] = s.mat[8];
     outRenderBuffer[i++] = s.layer | 0;
   }
 
-  return flat.length;
+  return _walkView.length;
 };
 
 export const createRenderer = (canvas: HTMLCanvasElement) => {
