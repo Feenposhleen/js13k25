@@ -1,7 +1,7 @@
 import spriteVS_src from './glsl/sprite_shader.vs';
 import spriteFS_src from './glsl/sprite_shader.fs';
 import fsQuadVs from './glsl/full_screen_quad.vs';
-import postGrayscaleFs from './glsl/post_grayscale.fs';
+import postBlurFs from './glsl/post_blur.fs';
 import postNoopFs from './glsl/post_noop.fs';
 
 import Utils from './utils';
@@ -12,7 +12,7 @@ export const RENDERER_WIDTH = 1200;
 export const RENDERER_HEIGHT = 720;
 export const RENDERER_ASPECT = RENDERER_WIDTH / RENDERER_HEIGHT;
 export const RENDERER_LARGEST = Math.max(RENDERER_WIDTH, RENDERER_HEIGHT);
-export const RENDERER_SPRITE_RESOLUTION = 256;
+export const RENDERER_SPRITE_RESOLUTION = 512;
 export const MAX_SPRITE_COUNT = 10000;
 export const FLOATS_PER_INSTANCE = 11; // mat3 (9) + layer (1) + opacity (1)
 export const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
@@ -173,7 +173,7 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   const locOpacity = getAttribLocation(spriteProgram, "aOpacity");
   _instAttrib(locOpacity, 1, 40);
 
-  const postPrograms: WebGLProgram[] = [_createProgram(fsQuadVs, postNoopFs)];
+  const postPrograms: WebGLProgram[] = [_createProgram(fsQuadVs, postBlurFs), _createProgram(fsQuadVs, postNoopFs)];
 
   let targetA: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
   let targetB: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
@@ -212,8 +212,11 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
       const prog = postPrograms[i];
       useProgram(prog);
       uniform1i(getUniformLocation(prog, "uTexture"), 0);
+      gl.uniform1f(getUniformLocation(prog, "t"), performance.now() / 1000);
       activeTexture(gl.TEXTURE0);
       bindTexture(TEXTURE_2D, readTex);
+      gl.generateMipmap(TEXTURE_2D);
+      texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
       const isLast = (i === postPrograms.length - 1);
       bindFramebuffer(FRAMEBUFFER, isLast ? null : write.fb);
       viewport(0, 0, width, height);

@@ -4,7 +4,7 @@ import createSprite from "../../core/sprite";
 export const createCat = () => {
   var _ticks = 0;
 
-  const catBodySprite = createSprite(assetLibrary._textures._catbody, [0, 0], [.3, .3]);
+  const catBodySprite = createSprite(assetLibrary._textures._catbody, [0, 0], [1, 1]);
   catBodySprite._updater = (_, __, delta) => {
     _ticks += delta;
   };
@@ -15,7 +15,6 @@ export const createCat = () => {
       0.01 + (0.01 * Math.sin(_ticks * 2)),
       sprite._position[1],
     ];
-    sprite._opacity = (Math.sin(_ticks * 3) + 1) / 2;
   };
 
   var eyes = [];
