@@ -27,7 +27,7 @@ const texHalf = 400 / 2;
 const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
 const pxToClip = new Float32Array([2 / RENDERER_WIDTH, 0, 0, 0, -2 / RENDERER_HEIGHT, 0, -1, 1, 1]);
 
-const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => {
+const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null, parentOpacity = 1): void => {
   const x = sprite._position[0]!;
   const y = sprite._position[1]!;
   const angle = sprite._angle || 0;
@@ -48,18 +48,20 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => 
   const world = parentMat ? Utils._mat3Multiply(sprite.___r[1], parentMat, local) : local;
   const worldWithTex = Utils._mat3Multiply(sprite.___r[2], sprite.___r[1], texScale);
 
+  const combinedOpacity = parentOpacity * sprite._opacity;
+
   if (sprite._texture !== null) {
     const obj = _walkBuffer[_walkView.length] || {};
     _walkBuffer[_walkView.length] = obj;
 
     obj.mat = Utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
     obj.layer = assetLibrary._textureIndex(sprite._texture);
-    obj.opacity = sprite._opacity;
+    obj.opacity = combinedOpacity;
     _walkView.push(obj);
   }
 
   if (sprite._children) for (const c of sprite._children) {
-    _fillWalkView(c, world);
+    _fillWalkView(c, world, combinedOpacity);
   }
 };
 
@@ -83,7 +85,8 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   canvas.width = RENDERER_WIDTH;
   canvas.height = RENDERER_HEIGHT;
 
-  const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+  // request a non-premultiplied canvas so blending is predictable
+  const gl = canvas.getContext("webgl2", { premultipliedAlpha: true }) as WebGL2RenderingContext;
 
   // WebGL props for minification
   const attachShader = gl.attachShader.bind(gl);
@@ -176,7 +179,8 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   let targetB: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
 
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  // use standard alpha blending for straight (non-premultiplied) alpha
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   const _reloadTextures = () => {
     const images = [...assetLibrary._textureCache.values()];
@@ -185,6 +189,10 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     const tex = createTexture();
     activeTexture(gl.TEXTURE0);
     bindTexture(TEXTURE_2D_ARRAY, tex);
+
+    // make sure uploaded image data is treated as straight (non-premultiplied) alpha
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+
     texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MIN_FILTER, NEAREST);
     texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MAG_FILTER, NEAREST);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, CLAMP_TO_EDGE);

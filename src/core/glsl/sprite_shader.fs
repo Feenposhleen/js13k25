@@ -9,7 +9,8 @@ out vec4 outColor;
 
 void main(){
   vec4 col = texture(uTexArray, vec3(vUV, float(vLayer)));
-  if (col.a < 0.8) discard;
+  if (col.a < 0.9) discard;
+  //col.rgb *= vOpacity;
   col.a *= vOpacity;
   outColor = col;
 }
