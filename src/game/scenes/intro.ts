@@ -25,9 +25,10 @@ export default () => {
   const anchorSprite = createSprite(null, [0.5, 0.5]);
 
   const tableSprite = createSprite(assetLibrary._textures._table, [0, -0.05], [1.6, 1.6]);
-  const roomSprite = createSprite(assetLibrary._textures._room, [0.1, -0.25], [3, 3]);
+  const roomSprite = createSprite(assetLibrary._textures._room, [0, -0.25], [3.2, 3.2]);
 
   const cat = createCat();
+  cat._position = [0, -0.23];
 
   anchorSprite._addChild(roomSprite);
   anchorSprite._addChild(tableSprite);

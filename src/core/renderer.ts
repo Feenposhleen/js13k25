@@ -12,22 +12,20 @@ export const RENDERER_WIDTH = 1200;
 export const RENDERER_HEIGHT = 720;
 export const RENDERER_ASPECT = RENDERER_WIDTH / RENDERER_HEIGHT;
 export const RENDERER_LARGEST = Math.max(RENDERER_WIDTH, RENDERER_HEIGHT);
-export const RENDERER_SPRITE_SIZE = 512;
+export const RENDERER_SPRITE_RESOLUTION = 256;
 export const MAX_SPRITE_COUNT = 10000;
-export const FLOATS_PER_INSTANCE = 10; // mat3 (9) + layer (1)
+export const FLOATS_PER_INSTANCE = 11; // mat3 (9) + layer (1) + opacity (1)
 export const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 
 export type RenderTarget = { fb: WebGLFramebuffer | null; tex: WebGLTexture | null; width: number; height: number };
 
-type RenderDataItem = { mat: Float32Array; layer: number };
+type RenderDataItem = { mat: Float32Array; layer: number; opacity: number };
 
 const _walkBuffer: Array<RenderDataItem> = [];
 const _walkView: Array<RenderDataItem> = [];
-const texHalf = RENDERER_SPRITE_SIZE / 2;
+const texHalf = 400 / 2;
 const texScale = new Float32Array([texHalf, 0, 0, 0, texHalf, 0, 0, 0, 1]);
 const pxToClip = new Float32Array([2 / RENDERER_WIDTH, 0, 0, 0, -2 / RENDERER_HEIGHT, 0, -1, 1, 1]);
-const worldWithTexBuffer = new Float32Array(9);
-const worldBuffer = new Float32Array(9);
 
 const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => {
   const x = sprite._position[0]!;
@@ -37,6 +35,7 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => 
   const sx = sprite._scale[0];
   const sy = sprite._scale[1];
 
+  // Reusable matrices
   if (!sprite.___r) {
     sprite.___r = [
       new Float32Array(9),
@@ -55,6 +54,7 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null): void => 
 
     obj.mat = Utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
     obj.layer = assetLibrary._textureIndex(sprite._texture);
+    obj.opacity = sprite._opacity;
     _walkView.push(obj);
   }
 
@@ -73,6 +73,7 @@ export const _buildRenderData = (sprites: Sprite[], outRenderBuffer: Float32Arra
     outRenderBuffer[i++] = s.mat[3]; outRenderBuffer[i++] = s.mat[4]; outRenderBuffer[i++] = s.mat[5];
     outRenderBuffer[i++] = s.mat[6]; outRenderBuffer[i++] = s.mat[7]; outRenderBuffer[i++] = s.mat[8];
     outRenderBuffer[i++] = s.layer | 0;
+    outRenderBuffer[i++] = s.opacity;
   }
 
   return _walkView.length;
@@ -166,6 +167,9 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
   const locLayer = getAttribLocation(spriteProgram, "aLayer");
   _instAttrib(locLayer, 1, 36);
 
+  const locOpacity = getAttribLocation(spriteProgram, "aOpacity");
+  _instAttrib(locOpacity, 1, 40);
+
   const postPrograms: WebGLProgram[] = [_createProgram(fsQuadVs, postNoopFs)];
 
   let targetA: RenderTarget | null = _createRenderTarget(canvas.width, canvas.height);
@@ -185,13 +189,13 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     texParameteri(TEXTURE_2D_ARRAY, TEXTURE_MAG_FILTER, NEAREST);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, CLAMP_TO_EDGE);
     texParameteri(TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, CLAMP_TO_EDGE);
-    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE, images.length, 0, RGBA, UNSIGNED_BYTE, null);
+    texImage3D(TEXTURE_2D_ARRAY, 0, RGBA, RENDERER_SPRITE_RESOLUTION, RENDERER_SPRITE_RESOLUTION, images.length, 0, RGBA, UNSIGNED_BYTE, null);
 
     for (let i = 0; i < images.length; i++) {
-      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE, 1, RGBA, UNSIGNED_BYTE, images[i]);
+      texSubImage3D(TEXTURE_2D_ARRAY, 0, 0, 0, i, RENDERER_SPRITE_RESOLUTION, RENDERER_SPRITE_RESOLUTION, 1, RGBA, UNSIGNED_BYTE, images[i]);
     }
 
-    return { tex, width: RENDERER_SPRITE_SIZE, height: RENDERER_SPRITE_SIZE, layers: images.length };
+    return { tex, width: RENDERER_SPRITE_RESOLUTION, height: RENDERER_SPRITE_RESOLUTION, layers: images.length };
   };
 
   const runPostChain = (srcTex: WebGLTexture | null, width: number, height: number) => {

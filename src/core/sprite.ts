@@ -44,7 +44,12 @@ const createSprite = (
       }
     },
 
-    _update: (state: FullState, delta: number): void => _sprite._updater(_sprite, state, delta),
+    _update: (state: FullState, delta: number): void => {
+      _sprite._updater(_sprite, state, delta);
+      for (const child of _sprite._children) {
+        child._update(state, delta);
+      }
+    },
   }
 
   return _sprite;

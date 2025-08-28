@@ -12,13 +12,6 @@ export type Scene = {
 
 export type SceneUpdater = (scene: Scene, state: FullState, delta: number) => void;
 
-const updateSpriteTree = (scene: Scene, state: FullState, dt: number): void => {
-  for (const child of scene._rootSprite._children) {
-    child._update(state, dt);
-    updateSpriteTree({ ...scene, _rootSprite: child }, state, dt);
-  }
-};
-
 export default (update?: SceneUpdater | undefined) => {
   var _updater: SceneUpdater = update || ((_, __, ___): void => { });
 
@@ -30,7 +23,7 @@ export default (update?: SceneUpdater | undefined) => {
     _update: (state: FullState, delta: number): void => {
       if (!_scene._paused) {
         _updater(_scene, state, delta);
-        updateSpriteTree(_scene, state, delta);
+        _scene._rootSprite._update(state, delta);
       }
     },
   }

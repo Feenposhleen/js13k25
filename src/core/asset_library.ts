@@ -1,5 +1,5 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
-import { RENDERER_SPRITE_SIZE } from "./renderer";
+import { RENDERER_SPRITE_RESOLUTION } from "./renderer";
 
 const assetLibrary = {
   _textures: drawables._textures,
@@ -26,7 +26,7 @@ const assetLibrary = {
     palette: string[],
     textureData: number[][],
   ): Promise<ImageData> {
-    const canvas = new OffscreenCanvas(RENDERER_SPRITE_SIZE, RENDERER_SPRITE_SIZE);
+    const canvas = new OffscreenCanvas(RENDERER_SPRITE_RESOLUTION, RENDERER_SPRITE_RESOLUTION);
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = 'rgba(0, 0, 0, 0)';

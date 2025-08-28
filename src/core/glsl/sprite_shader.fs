@@ -2,12 +2,14 @@
 
 precision mediump float;
 in vec2 vUV;
+in float vOpacity;
 flat in int vLayer;
 uniform highp sampler2DArray uTexArray;
-out vec4 fragColor;
+out vec4 outColor;
 
 void main(){
-  vec4 s = texture(uTexArray, vec3(vUV, float(vLayer)));
-  if (s.a < .9) discard;
-  fragColor = s;
+  vec4 col = texture(uTexArray, vec3(vUV, float(vLayer)));
+  if (col.a < 0.8) discard;
+  col.a *= vOpacity;
+  outColor = col;
 }

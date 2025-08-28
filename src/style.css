@@ -8,7 +8,6 @@ body {
 }
 
 #c {
-  image-rendering: pixelated;
   display: block;
   touch-action: none;
   border: 1px solid #ccc;
