@@ -23,6 +23,7 @@ export type TransferDataFromWindow = {
 const createGameWindow = () => {
   // Elements
   const _canvas = utils.$('#c') as HTMLCanvasElement;
+  let _canvasRect = _canvas.getBoundingClientRect();
   const scriptContent = (utils.$('#j') as HTMLScriptElement).innerHTML;
   const _jsUrl = URL.createObjectURL(new Blob([scriptContent], { type: 'text/javascript' }));
   const _worker: Worker = new Worker(_jsUrl);
@@ -34,7 +35,6 @@ const createGameWindow = () => {
   let _keyTaps: Record<string, boolean> = {};
 
   // Rendering
-  let _pixelMultiplier = 1;
   let _renderer: Renderer | null = null;
   let _freeRenderBuffer: Float32Array | null = new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE);
   let _pendingRenderBuffer: Float32Array | null = null;
@@ -63,11 +63,17 @@ const createGameWindow = () => {
     }
   };
 
+  const _onResize = () => {
+    _canvasRect = _canvas.getBoundingClientRect();
+  };
+
   const _wireInput = () => {
+    window.onresize = _onResize;
+
     window.onpointermove = (ev: PointerEvent) => {
       _pointer._coord = [
-        ev.clientX / _pixelMultiplier,
-        ev.clientY / _pixelMultiplier,
+        (ev.clientX - _canvasRect.left) / _canvasRect.width,
+        (ev.clientY - _canvasRect.top) / _canvasRect.height,
       ];
     };
 
@@ -110,6 +116,8 @@ const createGameWindow = () => {
 
     playButton.style.display = 'block';
     playButton.addEventListener('click', _start);
+
+    utils._wait(2).then(_onResize);
   }
 
   const _start = async (): Promise<void> => {
