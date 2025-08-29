@@ -1,5 +1,6 @@
 import assetLibrary from "../../core/asset_library";
-import createSprite from "../../core/sprite";
+import createSprite, { SpriteUpdater } from "../../core/sprite";
+import { utils } from "../../core/utils";
 
 export const createCat = () => {
   var _ticks = 0;
@@ -42,9 +43,20 @@ export const createCat = () => {
 
   const catPawSprite = createSprite(assetLibrary._textures._catpaw, [-0.06, 0], [1.2, 1.2], 1, 3);
   // Rotate the paw back and forth slightly
-  catPawSprite._updater = ((sprite, state, delta) => {
+
+  const readyUpdater: SpriteUpdater = (sprite, state, delta) => {
+    sprite._scale = [1.2, 1.2];
     sprite._angle = 3 + (0.1 * Math.sin(_ticks * 3));
-  });
+  };
+
+  const chillUpdater: SpriteUpdater = (sprite, state, delta) => {
+    sprite._scale = [0.9, 0.9];
+    sprite._angle = (0.1 * Math.sin(_ticks * 1));
+  }
+
+  catPawSprite._updater = chillUpdater;
+
+  utils._wait(3).then(() => utils._tweenUpdater(catPawSprite, readyUpdater, 0.2));
 
   catBodySprite._addChild(catPawSprite);
   catBodySprite._addChild(catFaceSprite);

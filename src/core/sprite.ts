@@ -14,6 +14,7 @@ export type Sprite = {
   _update: (state: FullState, dt: number) => void;
   _addChild: (sprite: Sprite) => void;
   _removeChild: (sprite: Sprite) => void;
+  _copy: () => Sprite;
   ___r?: Array<Float32Array>
 };
 
@@ -49,6 +50,18 @@ const createSprite = (
       for (const child of _sprite._children) {
         child._update(state, delta);
       }
+    },
+
+    _copy: function (): Sprite {
+      const newSprite = createSprite(
+        this._texture,
+        [this._position[0], this._position[1]],
+        [this._scale[0], this._scale[1]],
+        this._opacity,
+        this._angle,
+      );
+      newSprite._updater = this._updater;
+      return newSprite;
     },
   }
 

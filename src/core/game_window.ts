@@ -2,7 +2,7 @@ import AssetLibrary from "./asset_library";
 import { TransferDataFromWorker } from "./game_worker";
 import createRenderer, { BYTES_PER_INSTANCE, FLOATS_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
 import createMiniSequencer, { MiniSequencer } from "./sound";
-import utils, { Vec } from "./utils";
+import { utils, Vec } from "./utils";
 
 export type Pointer = {
   _coord: Vec;

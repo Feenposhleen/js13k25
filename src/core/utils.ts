@@ -1,8 +1,10 @@
+import { Sprite, SpriteUpdater } from "./sprite";
+
 export type Vec = [number, number];
 
 export type Utils = typeof utils;
 
-const utils = {
+export const utils = {
   $: (selector: string): HTMLElement | null => {
     return document.querySelector(selector);
   },
@@ -94,7 +96,49 @@ const utils = {
     out[3] = r01; out[4] = r11; out[5] = 0;
     out[6] = tx; out[7] = ty; out[8] = 1;
     return out;
-  }
-}
+  },
 
-export default utils;
+  // Engine things
+
+  _tweenUpdater: (
+    sprite: Sprite,
+    updaterTo: SpriteUpdater,
+    duration: number,
+  ): Promise<void> => {
+    const updaterFrom = sprite._updater;
+    let elapsed = 0;
+
+    return new Promise((resolve) => {
+      sprite._updater = (sprite, state, delta) => {
+        elapsed = Math.min(duration, elapsed + delta);
+
+        const fromSprite = sprite._copy();
+        updaterFrom(fromSprite, state, delta);
+
+        const toSprite = sprite._copy();
+        updaterTo(toSprite, state, delta);
+
+        const t = (elapsed / duration);
+        sprite._position[0] = fromSprite._position[0] - ((toSprite._position[0] - fromSprite._position[0]) * t);
+        sprite._position[1] = fromSprite._position[1] + ((toSprite._position[1] - fromSprite._position[1]) * t);
+        sprite._scale[0] = fromSprite._scale[0] + ((toSprite._scale[0] - fromSprite._scale[0]) * t);
+        sprite._scale[1] = fromSprite._scale[1] + ((toSprite._scale[1] - fromSprite._scale[1]) * t);
+        sprite._angle = fromSprite._angle + ((toSprite._angle - fromSprite._angle) * t);
+        sprite._opacity = fromSprite._opacity + ((toSprite._opacity - fromSprite._opacity) * t);
+
+        if (elapsed >= duration) {
+          sprite._updater = updaterTo;
+          resolve();
+        }
+      };
+    });
+  },
+
+  _wait: (duration: number): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, duration * 1000);
+    });
+  },
+}

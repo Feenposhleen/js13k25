@@ -4,7 +4,7 @@ import fsQuadVs from './glsl/full_screen_quad.vs';
 import postBlurFs from './glsl/post_blur.fs';
 import postNoopFs from './glsl/post_noop.fs';
 
-import Utils from './utils';
+import { utils } from './utils';
 import { Sprite } from './sprite';
 import assetLibrary from './asset_library';
 
@@ -44,9 +44,9 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null, parentOpa
     ]
   }
 
-  let local = Utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy, sprite.___r[0]);
-  const world = parentMat ? Utils._mat3Multiply(sprite.___r[1], parentMat, local) : local;
-  const worldWithTex = Utils._mat3Multiply(sprite.___r[2], sprite.___r[1], texScale);
+  let local = utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy, sprite.___r[0]);
+  const world = parentMat ? utils._mat3Multiply(sprite.___r[1], parentMat, local) : local;
+  const worldWithTex = utils._mat3Multiply(sprite.___r[2], sprite.___r[1], texScale);
 
   const combinedOpacity = parentOpacity * sprite._opacity;
 
@@ -54,7 +54,7 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null, parentOpa
     const obj = _walkBuffer[_walkView.length] || {};
     _walkBuffer[_walkView.length] = obj;
 
-    obj.mat = Utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
+    obj.mat = utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
     obj.layer = assetLibrary._textureIndex(sprite._texture);
     obj.opacity = combinedOpacity;
     _walkView.push(obj);
