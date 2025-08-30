@@ -73,6 +73,7 @@ const createGameWindow = () => {
     window.onpointermove = (ev: PointerEvent) => {
       _pointer._coord[0] = utils._clamp((ev.clientX - _canvasRect.left) / _canvasRect.width, 0, 1);
       _pointer._coord[1] = utils._clamp((ev.clientY - _canvasRect.top) / _canvasRect.height, 0, 1);
+      console.log(_pointer._coord);
     };
 
     window.onpointerdown = (ev: PointerEvent) => {

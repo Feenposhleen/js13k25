@@ -71,7 +71,7 @@ export const utils = {
   _vectorRotate: (vector: Vec, rotation: number): Vec => {
     return [
       (vector[0] * Math.cos(rotation)) - (vector[1] * Math.sin(rotation)),
-      (vector[0] * Math.sin(rotation)) - (vector[1] * Math.cos(rotation)),
+      (vector[0] * Math.sin(rotation)) + (vector[1] * Math.cos(rotation)),
     ];
   },
 
@@ -103,6 +103,32 @@ export const utils = {
   },
 
   // Engine things
+
+  _resolvePosition: (...nodes: Sprite[]): Vec => {
+    let x = 0, y = 0, sx = 1, sy = 1, a = 0;
+    for (const node of nodes) {
+      // apply current cumulative scale to the node's local position
+      const lx = node._position[0] * sx;
+      const ly = node._position[1] * sy;
+
+      // rotate the scaled local position by the accumulated angle
+      const cos = Math.cos(a);
+      const sin = Math.sin(a);
+      const rx = lx * cos - ly * sin;
+      const ry = lx * sin + ly * cos;
+
+      // accumulate world position
+      x += rx;
+      y += ry;
+
+      // update cumulative scale and angle for next child
+      sx *= node._scale[0];
+      sy *= node._scale[1];
+      a += node._angle;
+    }
+
+    return [x, y];
+  },
 
   _tweenUpdater: (
     sprite: Sprite,

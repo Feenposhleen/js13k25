@@ -44,7 +44,7 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null, parentOpa
     ]
   }
 
-  let local = utils._mat3FromTRS(x * RENDERER_LARGEST, y * RENDERER_LARGEST, angle, sx, sy, sprite.___r[0]);
+  let local = utils._mat3FromTRS(x * RENDERER_WIDTH, y * RENDERER_HEIGHT, angle, sx, sy, sprite.___r[0]);
   const world = parentMat ? utils._mat3Multiply(sprite.___r[1], parentMat, local) : local;
   const worldWithTex = utils._mat3Multiply(sprite.___r[2], sprite.___r[1], texScale);
 
