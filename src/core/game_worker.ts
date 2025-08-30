@@ -1,3 +1,4 @@
+import { GameState } from "../game/state";
 import { InputState, TransferDataFromWindow } from "./game_window";
 import { _buildRenderData, BYTES_PER_INSTANCE, FLOATS_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
 import { Scene } from "./scene";

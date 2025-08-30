@@ -105,29 +105,28 @@ export const utils = {
   // Engine things
 
   _resolvePosition: (...nodes: Sprite[]): Vec => {
-    let x = 0, y = 0, sx = 1, sy = 1, a = 0;
-    for (const node of nodes) {
-      // apply current cumulative scale to the node's local position
-      const lx = node._position[0] * sx;
-      const ly = node._position[1] * sy;
+    const coord: Vec = [0, 0];
+    const scale: Vec = [1, 1];
+    let angle = 0;
 
-      // rotate the scaled local position by the accumulated angle
-      const cos = Math.cos(a);
-      const sin = Math.sin(a);
+    for (const node of nodes) {
+      const lx = node._position[0] * scale[0];
+      const ly = node._position[1] * scale[1];
+
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
       const rx = lx * cos - ly * sin;
       const ry = lx * sin + ly * cos;
 
-      // accumulate world position
-      x += rx;
-      y += ry;
+      coord[0] += rx;
+      coord[1] += ry;
 
-      // update cumulative scale and angle for next child
-      sx *= node._scale[0];
-      sy *= node._scale[1];
-      a += node._angle;
+      scale[0] *= node._scale[0];
+      scale[1] *= node._scale[1];
+      angle += node._angle;
     }
 
-    return [x, y];
+    return coord;
   },
 
   _tweenUpdater: (

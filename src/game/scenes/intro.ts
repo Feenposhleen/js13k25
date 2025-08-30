@@ -2,6 +2,7 @@ import createScene, { Scene } from "../../core/scene";
 import { createCat } from "../objects/cat";
 import { createRoom } from "../objects/room";
 import { createSelectables } from "../objects/selectables";
+import { createSelected } from "../objects/selected";
 
 export default () => {
   var _ticks = 0;
@@ -20,9 +21,12 @@ export default () => {
   cat._position = [0.5, 0.4];
   cat._scale = [0.5, 0.5];
 
+  const selected = createSelected();
+
   introScene._rootSprite._addChild(room);
   introScene._rootSprite._addChild(cat);
   introScene._rootSprite._addChild(selectables);
+  introScene._rootSprite._addChild(selected);
 
   return introScene;
 }

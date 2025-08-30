@@ -7,5 +7,6 @@ new Game(
   {
     _done: false,
     _paused: false,
+    _selectedItem: null,
   },
 );

@@ -1,6 +1,7 @@
 import createGameWorker, { GameWorker } from './game_worker';
 import createGameWindow, { GameWindow } from './game_window';
 import { Scene } from './scene';
+import { GameState } from '../game/state';
 
 export class Game {
   _running: boolean = false;
