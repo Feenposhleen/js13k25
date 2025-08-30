@@ -20,9 +20,7 @@ export type FullState = {
 }
 
 const createGameWorker = () => {
-  let _freeRenderBuffer: Float32Array | null = null;
   const _sceneRemoveList = new Set<Scene>();
-  var _gameState: GameState | undefined;
   var _sceneTree: Scene[] = [];
   var _keys: Record<string, boolean> = {};
   var _pointer = { _coord: <Vec>[0, 0], _down: false };
@@ -31,6 +29,8 @@ const createGameWorker = () => {
   var _input: InputState = { _keys: _keys, _pointer: _pointer };
 
   self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
+    if (!_state) return;
+    _state.input = data._input;
     _updateGame(data._freeRenderBuffer);
   };
 

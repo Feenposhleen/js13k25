@@ -29,6 +29,10 @@ export const utils = {
     return [utils._rndRange(pos[0], radius), utils._rndRange(pos[1], radius)];
   },
 
+  _clamp: (num: number, min: number, max: number): number => {
+    return Math.min(Math.max(num, min), max);
+  },
+
   // Distances
 
   _numberDistance: (num1: number, num2: number): number => {
