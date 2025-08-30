@@ -29,18 +29,18 @@ export const createSelectables = (): Sprite => {
     content._addChild(obj);
 
     content._updater = (sprite, state) => {
-      if (state.state._selectedItem === key) {
+      if (state._state._selectedItem === key) {
         sprite._children[0]._opacity = 0;
         base._scale[0] = 0.26;
         sprite._texture = assetLibrary._textures._ui_square;
       } else {
         sprite._children[0]._opacity = 0.8;
         const position = utils._resolvePosition(selectables, base, sprite);
-        const distance = utils._vectorDistance(state.input._pointer._coord, position);
+        const distance = utils._vectorDistance(state._input._pointer._coord, position);
 
         if (distance < 0.06) {
-          if (state.input._pointer._down && !state.input._pointer.buttonIndex) {
-            state.state._selectedItem = key;
+          if (state._input._pointer._down && !state._input._pointer._buttonIndex) {
+            state._state._selectedItem = key;
           }
           sprite._opacity = 1;
           base._scale[0] = 0.3;

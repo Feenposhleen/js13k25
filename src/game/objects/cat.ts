@@ -38,11 +38,11 @@ export const createCat = () => {
     };
 
     const followCursorPupilsUpdater: SpriteUpdater = (sprite, state, __) => {
-      state.input._pointer._coord
+      state._input._pointer._coord
 
       sprite._position = [
-        (state.input._pointer._coord[0] - .5) * 0.1 * mult,
-        (state.input._pointer._coord[1] - .5 + .1) * 0.1,
+        (state._input._pointer._coord[0] - .5) * 0.1 * mult,
+        (state._input._pointer._coord[1] - .5 + .1) * 0.1,
       ];
     };
 

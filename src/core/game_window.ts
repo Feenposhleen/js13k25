@@ -7,7 +7,7 @@ import { utils, Vec } from "./utils";
 export type Pointer = {
   _coord: Vec;
   _down: boolean;
-  buttonIndex?: number;
+  _buttonIndex?: number;
 }
 
 export type InputState = {
@@ -57,9 +57,9 @@ const createGameWindow = () => {
   };
 
   const _receiveFrame = (data: TransferDataFromWorker) => {
-    if (data.renderArray) {
-      _pendingRenderBuffer = data.renderArray;
-      _pendingSpriteCount = data.spriteCount;
+    if (data._renderArray) {
+      _pendingRenderBuffer = data._renderArray;
+      _pendingSpriteCount = data._spriteCount;
     }
   };
 

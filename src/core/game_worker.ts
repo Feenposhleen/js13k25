@@ -5,19 +5,19 @@ import { Scene } from "./scene";
 import { Vec } from "./utils";
 
 export type TransferDataFromWorker = {
-  renderArray: Float32Array;
-  spriteCount: number;
+  _renderArray: Float32Array;
+  _spriteCount: number;
 }
 
 export const defaultWorkerTransferData = (): TransferDataFromWorker => ({
-  renderArray: new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE),
-  spriteCount: 0,
+  _renderArray: new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE),
+  _spriteCount: 0,
 });
 
 export type FullState = {
-  game: GameWorker;
-  state: GameState;
-  input: InputState;
+  _game: GameWorker;
+  _state: GameState;
+  _input: InputState;
 }
 
 const createGameWorker = () => {
@@ -31,12 +31,12 @@ const createGameWorker = () => {
 
   self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
     if (!_state) return;
-    _state.input = data._input;
+    _state._input = data._input;
     _updateGame(data._freeRenderBuffer);
   };
 
   const _updateWindow = (renderBuffer: Float32Array, spriteCount: number) => {
-    const data: TransferDataFromWorker = { renderArray: renderBuffer, spriteCount };
+    const data: TransferDataFromWorker = { _renderArray: renderBuffer, _spriteCount: spriteCount };
     (self as any).postMessage(data, [renderBuffer.buffer]);
   };
 
@@ -63,9 +63,9 @@ const createGameWorker = () => {
   const gameWorker = {
     _initialize(initialScene: Scene, initialState: GameState) {
       _state = {
-        game: gameWorker,
-        state: initialState,
-        input: _input,
+        _game: gameWorker,
+        _state: initialState,
+        _input: _input,
       };
 
       gameWorker._pushScene(initialScene);
