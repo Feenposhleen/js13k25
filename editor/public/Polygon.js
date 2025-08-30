@@ -22,11 +22,13 @@ class Polygon {
     this.points.splice(index, 2);
   }
 
+  addPoint(coords) {
+    this.points.push(coords[0], coords[1]);
+  }
+
   pointIndex(coords) {
     for (let i = 0; i < this.points.length; i += 2) {
-      const px = this.points[i];
-      const py = this.points[i + 1];
-      if (this.distance([px, py], coords) < 2) {
+      if (this.points[i] === coords[0] && this.points[i + 1] === coords[1]) {
         return i;
       }
     }

@@ -1,5 +1,6 @@
 class EditorMode {
   static SELECT = 'select';
+  static DRAW = 'draw';
   static ADD = 'add';
   static MOVE = 'move';
   static DELETE = 'delete';
@@ -99,6 +100,11 @@ class EditorUI {
         text: 'Select',
         classNames: ['mode', 'select'],
         mode: EditorMode.SELECT,
+      },
+      {
+        text: 'Draw',
+        classNames: ['mode', 'draw'],
+        mode: EditorMode.DRAW,
       },
       {
         text: 'Add',

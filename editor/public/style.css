@@ -17,6 +17,8 @@ body {
   display: flex;
   flex-direction: row;
   gap: 10px;
+  height: 800px;
+  width: 1200px;
 }
 
 #left,
@@ -24,7 +26,7 @@ body {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
-  align-items: right;
+  align-items: stretch;
 }
 
 #center {
@@ -39,9 +41,17 @@ body {
   flex-direction: column;
 }
 
-/* SVG stuff ----------- */
+#colors {
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
 
-.poly {}
+#textures {
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+/* SVG stuff ----------- */
 
 .poly.active {
   stroke: aqua;

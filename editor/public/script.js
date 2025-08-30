@@ -73,6 +73,18 @@
             }
             break;
           }
+          case EditorMode.DRAW: {
+            if (!selectedPolygon) {
+              const polygon = new Polygon(coords, editorUi.selectedColor, 0);
+              editorUi.selectedTexture.addPolygon(polygon);
+              polygonView.updatePolygons(editorUi.selectedTexture.polygons);
+              polygonView.selectPolygon(polygon);
+            } else {
+              selectedPolygon.addPoint(coords);
+              polygonView.updatePolygons();
+            }
+            break;
+          }
           case EditorMode.NEW: {
             const polygon = new Polygon([coords], editorUi.selectedColor, 0);
             editorData.selectedTexture.addPolygon(polygon);

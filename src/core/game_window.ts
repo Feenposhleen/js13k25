@@ -115,7 +115,9 @@ const createGameWindow = () => {
     await AssetLibrary._preRenderTextures();
 
     playButton.style.display = 'block';
-    playButton.addEventListener('click', _start);
+
+    //playButton.addEventListener('click', _start);
+    _start();
 
     utils._wait(2).then(_onResize);
   }
