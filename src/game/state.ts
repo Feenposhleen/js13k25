@@ -8,7 +8,7 @@ export type Placement = {
   _position: Vec;
   _scale: Vec;
   _sprite?: Sprite;
-  _occupied?: boolean;
+  _placed?: boolean;
 };
 
 export type GameState = {
@@ -24,27 +24,27 @@ export const createInitialState = (): GameState => {
     _done: false,
     _selectedItem: null,
     _placements: [
-      { _texture: assetLibrary._textures._utensil_fork, _position: [0.115, -0.05], _scale: [0.3, 0.3] },
-      { _texture: assetLibrary._textures._utensil_fork, _position: [-0.115, -0.05], _scale: [-0.3, 0.3] },
+      { _texture: assetLibrary._textures._utensil_knife, _position: [0.62, 0.55], _scale: [0.32, 0.32] },
+      { _texture: assetLibrary._textures._utensil_fork, _position: [0.38, 0.55], _scale: [-0.3, 0.3] },
 
-      { _texture: assetLibrary._textures._utensil_knife, _position: [0.15, 0.08], _scale: [0.32, 0.32] },
-      { _texture: assetLibrary._textures._utensil_knife, _position: [-0.15, 0.08], _scale: [-0.32, 0.32] },
+      { _texture: assetLibrary._textures._utensil_fork, _position: [0.66, 0.675], _scale: [0.3, 0.3] },
+      { _texture: assetLibrary._textures._utensil_knife, _position: [0.34, 0.675], _scale: [-0.32, 0.32] },
 
-      { _texture: assetLibrary._textures._utensil_plate, _position: [0.13, 0], _scale: [0.4, 0.3] },
-      { _texture: assetLibrary._textures._utensil_plate, _position: [-0.13, 0], _scale: [-0.4, 0.3] },
+      { _texture: assetLibrary._textures._utensil_plate, _position: [0.64, 0.6], _scale: [0.4, 0.3] },
+      { _texture: assetLibrary._textures._utensil_plate, _position: [0.36, 0.6], _scale: [-0.4, 0.3] },
 
-      { _texture: assetLibrary._textures._utensil_glass, _position: [0.04, -0.01], _scale: [0.2, 0.2] },
-      { _texture: assetLibrary._textures._utensil_glass, _position: [-0.04, -0.01], _scale: [-0.2, 0.2] },
+      { _texture: assetLibrary._textures._utensil_glass, _position: [0.45, 0.59], _scale: [0.2, 0.2] },
+      { _texture: assetLibrary._textures._utensil_glass, _position: [0.55, 0.59], _scale: [-0.2, 0.2] },
     ],
   }
 }
 
-export const getClosestPlacement = (state: GameState, texture: number[][], coord: Vec): Placement | null => {
+export const getClosestFreePlacement = (state: GameState, texture: number[][], coord: Vec): Placement | null => {
   let closest: Placement | null = null;
   for (const placement of state._placements) {
-    if (placement._texture === texture) {
+    if (!placement._placed && placement._texture === texture) {
       const dist = utils._vectorDistance(coord, placement._position);
-      if (!closest || dist < utils._vectorDistance(coord, closest._position)) {
+      if (!closest || dist < utils._vectorDistance(coord, placement._position)) {
         closest = placement;
       }
     }

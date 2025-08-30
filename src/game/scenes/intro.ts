@@ -23,7 +23,6 @@ export default () => {
   cat._scale = [0.5, 0.5];
 
   const tableSlots = createTableSlots();
-  tableSlots._position = [0.5, 0.6];
 
   const selected = createSelected();
 
