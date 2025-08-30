@@ -1,12 +1,9 @@
 import { Game } from "../core/game";
 import createIntroScene from "./scenes/intro";
 import { createStressScene } from "./scenes/stress";
+import { createInitialState } from "./state";
 
 new Game(
   createIntroScene(),
-  {
-    _done: false,
-    _paused: false,
-    _selectedItem: null,
-  },
+  createInitialState(),
 );
