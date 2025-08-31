@@ -51,7 +51,7 @@ export const createTableSlots = (): Sprite => {
       previouslyPlaced.set(placement, placement._placed || false);
     }
 
-    if (utils._rndFloat() < 0.01) {
+    if (utils._rndFloat() < 0.002) {
       for (const placement of game._state._placements) {
         placement._placed = false;
       }

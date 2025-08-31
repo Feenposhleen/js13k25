@@ -1,5 +1,5 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
-import { RENDERER_SPRITE_RESOLUTION } from "./renderer";
+import { RENDERER_SPRITE_RESOLUTION } from "./config";
 
 const assetLibrary = {
   _textures: drawables._textures,

@@ -1,6 +1,7 @@
 import AssetLibrary from "./asset_library";
+import { MAX_SPRITE_COUNT, FLOATS_PER_INSTANCE } from "./config";
 import { TransferDataFromWorker } from "./game_worker";
-import createRenderer, { BYTES_PER_INSTANCE, FLOATS_PER_INSTANCE, MAX_SPRITE_COUNT, Renderer } from "./renderer";
+import createRenderer, { Renderer } from "./renderer";
 import createMiniSequencer, { MiniSequencer } from "./sound";
 import { utils, Vec } from "./utils";
 
