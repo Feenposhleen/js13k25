@@ -14,6 +14,7 @@ export type Placement = {
 export type GameState = {
   _paused: boolean;
   _done: boolean;
+  _dizzyness: number;
   _selectedItem: keyof typeof placeables | keyof typeof pickupables | null;
   _placements: Array<Placement>;
 }
@@ -23,6 +24,7 @@ export const createInitialState = (): GameState => {
     _paused: false,
     _done: false,
     _selectedItem: null,
+    _dizzyness: 0.002,
     _placements: [
       { _texture: assetLibrary._textures._utensil_knife, _position: [0.62, 0.55], _scale: [0.32, 0.32] },
       { _texture: assetLibrary._textures._utensil_fork, _position: [0.38, 0.55], _scale: [-0.3, 0.3] },

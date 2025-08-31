@@ -46,6 +46,13 @@ export const utils = {
     );
   },
 
+  _dampenedApproach: (from: Vec, to: Vec, damp: number): Vec => {
+    return [
+      from[0] + ((to[0] - from[0]) * damp),
+      from[1] + ((to[1] - from[1]) * damp),
+    ];
+  },
+
   // Vector operations
 
   _vectorIntersects: (subjectPos: Vec, boxPos: Vec, boxRadius: number): boolean => {
