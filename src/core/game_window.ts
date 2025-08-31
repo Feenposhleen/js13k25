@@ -37,12 +37,21 @@ const createGameWindow = () => {
   // Rendering
   let _renderer: Renderer | null = null;
   let _freeRenderBuffer: Float32Array | null = new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE);
-  let _pendingRenderBuffer: Float32Array | null = null;
-  let _pendingSpriteCount: number = 0;
 
   // Audio
   let _music: MiniSequencer | null = null;
   let _sfx: MiniSequencer | null = null;
+
+  _worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
+    _receiveFrame(ev.data);
+  };
+
+  const _receiveFrame = (data: TransferDataFromWorker) => {
+    if (data._renderArray) {
+      _drawFrame(data._renderArray, data._spriteCount);
+      _freeRenderBuffer = data._renderArray;
+    }
+  };
 
   const _requestNewFrame = (freeRenderBuffer: Float32Array) => {
     const transferData: TransferDataFromWindow = {
@@ -56,11 +65,9 @@ const createGameWindow = () => {
     _keyTaps = {};
   };
 
-  const _receiveFrame = (data: TransferDataFromWorker) => {
-    if (data._renderArray) {
-      _pendingRenderBuffer = data._renderArray;
-      _pendingSpriteCount = data._spriteCount;
-    }
+  const _drawFrame = (buffer: Float32Array, spriteCount: number) => {
+    _renderer!._draw(buffer, spriteCount);
+    _freeRenderBuffer = buffer;
   };
 
   const _onResize = () => {
@@ -97,13 +104,6 @@ const createGameWindow = () => {
     if (_freeRenderBuffer) {
       _requestNewFrame(_freeRenderBuffer);
       _freeRenderBuffer = null;
-    }
-
-    if (_pendingRenderBuffer) {
-      _renderer!._draw(_pendingRenderBuffer, _pendingSpriteCount);
-      _freeRenderBuffer = _pendingRenderBuffer;
-      _pendingRenderBuffer = null;
-      _pendingSpriteCount = 0;
     }
 
     requestAnimationFrame(_renderLoop);
@@ -153,10 +153,6 @@ const createGameWindow = () => {
     _renderer = createRenderer(_canvas);
     _requestNewFrame(new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE));
     _renderLoop();
-  };
-
-  _worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
-    _receiveFrame(ev.data);
   };
 
   _wireInput();
