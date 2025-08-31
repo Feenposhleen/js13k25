@@ -40,10 +40,10 @@ export const createSelected = (): Sprite => {
         if (placement) {
           hintSprite._texture = selectedItemSprite._texture;
 
-          hintSprite._position = placement._position;
+          hintSprite._position = [...placement._position];
           hintSprite._scale = placement._scale;
 
-          if (utils._vectorDistance(selectedItemSprite._position, placement._position) < 0.05) {
+          if (utils._simpleDistance(selectedItemSprite._position, placement._position) < 0.05) {
             placement._placed = true;
             game._state._selectedItem = null;
           }

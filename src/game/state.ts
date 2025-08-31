@@ -43,8 +43,8 @@ export const getClosestFreePlacement = (state: GameState, texture: number[][], c
   let closest: Placement | null = null;
   for (const placement of state._placements) {
     if (!placement._placed && placement._texture === texture) {
-      const dist = utils._vectorDistance(coord, placement._position);
-      if (!closest || dist < utils._vectorDistance(coord, placement._position)) {
+      const dist = utils._simpleDistance(coord, placement._position);
+      if (!closest || dist < utils._simpleDistance(coord, placement._position)) {
         closest = placement;
       }
     }

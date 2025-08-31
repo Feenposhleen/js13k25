@@ -36,7 +36,7 @@ export const createSelectables = (): Sprite => {
       } else {
         sprite._children[0]._opacity = 0.8;
         const position = utils._resolvePosition(selectables, base, sprite);
-        const distance = utils._vectorDistance(state._input._pointer._coord, position);
+        const distance = utils._simpleDistance(state._input._pointer._coord, position);
 
         if (distance < 0.06) {
           if (state._input._pointer._down && !state._input._pointer._buttonIndex) {

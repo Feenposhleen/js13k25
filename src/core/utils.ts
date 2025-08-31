@@ -39,7 +39,7 @@ export const utils = {
     return Math.abs(num1 - num2);
   },
 
-  _vectorDistance: (pos1: Vec, pos2: Vec): number => {
+  _simpleDistance: (pos1: Vec, pos2: Vec): number => {
     return Math.max(
       utils._numberDistance(pos1[0], pos2[0]),
       utils._numberDistance(pos1[1], pos2[1]),
@@ -49,7 +49,7 @@ export const utils = {
   // Vector operations
 
   _vectorIntersects: (subjectPos: Vec, boxPos: Vec, boxRadius: number): boolean => {
-    const dist = utils._vectorDistance(subjectPos, boxPos);
+    const dist = utils._simpleDistance(subjectPos, boxPos);
     return (dist < boxRadius);
   },
 
