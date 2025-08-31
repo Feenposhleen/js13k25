@@ -13,7 +13,7 @@ export const createCat = () => {
   const catFaceSprite = createSprite(assetLibrary._textures._catface, [0, 0], [0.8, 0.8], 1, 0.3);
   catFaceSprite._updater = (sprite, _, __) => {
     sprite._position = [
-      0.01 + (0.01 * Math.sin(_ticks * 2)),
+      0.01 + (0.01 * utils._sin(_ticks * 2)),
       sprite._position[1],
     ];
   };
@@ -24,7 +24,7 @@ export const createCat = () => {
     const eyeSprite = createSprite(assetLibrary._textures._cateye_white, [0.045 * mult, -0.03], [0.12 * mult, 0.12], 1);
 
     eyeSprite._updater = (sprite, _, __) => {
-      const blink = (Math.sin(_ticks * 1.5) + 1) / 2;
+      const blink = (utils._sin(_ticks * 1.5) + 1) / 2;
       sprite._scale[1] = 0.12 * (blink > 0.98 ? 0.1 : 1);
     };
 
@@ -32,7 +32,7 @@ export const createCat = () => {
 
     const chillPupilsUpdater: SpriteUpdater = (sprite, _, __) => {
       sprite._position = [
-        0.01 * (mult * Math.sin(-_ticks * 2)),
+        0.01 * (mult * utils._sin(-_ticks * 2)),
         sprite._position[1],
       ];
     };
@@ -57,12 +57,12 @@ export const createCat = () => {
 
   const readyUpdater: SpriteUpdater = (sprite, state, delta) => {
     sprite._scale = [1.2, 1.2];
-    sprite._angle = 3 + (0.1 * Math.sin(_ticks * 3));
+    sprite._angle = 3 + (0.1 * utils._sin(_ticks * 3));
   };
 
   const chillUpdater: SpriteUpdater = (sprite, state, delta) => {
     sprite._scale = [0.9, 0.9];
-    sprite._angle = (0.1 * Math.sin(_ticks * 1));
+    sprite._angle = (0.1 * utils._sin(_ticks * 1));
   }
 
   catPawSprite._updater = chillUpdater;

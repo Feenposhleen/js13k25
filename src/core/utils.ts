@@ -9,6 +9,14 @@ export const utils = {
     return document.querySelector(selector);
   },
 
+  _sin: Math.sin,
+
+  _cos: Math.cos,
+
+  _min: Math.min,
+
+  _max: Math.max,
+
   _rndFloat: (): number => {
     return Math.random();
   },
@@ -30,7 +38,7 @@ export const utils = {
   },
 
   _clamp: (num: number, min: number, max: number): number => {
-    return Math.min(Math.max(num, min), max);
+    return utils._min(utils._max(num, min), max);
   },
 
   // Distances
@@ -40,7 +48,7 @@ export const utils = {
   },
 
   _simpleDistance: (pos1: Vec, pos2: Vec): number => {
-    return Math.max(
+    return utils._max(
       utils._numberDistance(pos1[0], pos2[0]),
       utils._numberDistance(pos1[1], pos2[1]),
     );
@@ -77,8 +85,8 @@ export const utils = {
 
   _vectorRotate: (vector: Vec, rotation: number): Vec => {
     return [
-      (vector[0] * Math.cos(rotation)) - (vector[1] * Math.sin(rotation)),
-      (vector[0] * Math.sin(rotation)) + (vector[1] * Math.cos(rotation)),
+      (vector[0] * utils._cos(rotation)) - (vector[1] * utils._sin(rotation)),
+      (vector[0] * utils._sin(rotation)) + (vector[1] * utils._cos(rotation)),
     ];
   },
 
@@ -100,7 +108,7 @@ export const utils = {
   },
 
   _mat3FromTRS: (tx: number, ty: number, angle: number, sx: number, sy: number, out: Float32Array) => {
-    const c = Math.cos(angle || 0), s = Math.sin(angle || 0);
+    const c = utils._cos(angle || 0), s = utils._sin(angle || 0);
     const r00 = c * sx, r10 = s * sx;
     const r01 = -s * sy, r11 = c * sy;
     out[0] = r00; out[1] = r10; out[2] = 0;
@@ -120,8 +128,8 @@ export const utils = {
       const lx = node._position[0] * scale[0];
       const ly = node._position[1] * scale[1];
 
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
+      const cos = utils._cos(angle);
+      const sin = utils._sin(angle);
       const rx = lx * cos - ly * sin;
       const ry = lx * sin + ly * cos;
 
@@ -146,7 +154,7 @@ export const utils = {
 
     return new Promise((resolve) => {
       sprite._updater = (sprite, state, delta) => {
-        elapsed = Math.min(duration, elapsed + delta);
+        elapsed = utils._min(duration, elapsed + delta);
 
         const fromSprite = sprite._copy();
         updaterFrom(fromSprite, state, delta);

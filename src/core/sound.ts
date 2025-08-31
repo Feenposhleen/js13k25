@@ -1,3 +1,5 @@
+import { utils } from "./utils";
+
 type PlayOptions = {
   _bpm: number;
   _octave?: number;
@@ -142,7 +144,7 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
       ...playOpts,
     };
 
-    _steps = Math.max(
+    _steps = utils._max(
       _opts._bass.length,
       _opts._chords.length,
       _opts._snare.length,

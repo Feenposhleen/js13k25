@@ -11,15 +11,15 @@ import assetLibrary from './asset_library';
 export const RENDERER_WIDTH = 1200;
 export const RENDERER_HEIGHT = 720;
 export const RENDERER_ASPECT = RENDERER_WIDTH / RENDERER_HEIGHT;
-export const RENDERER_LARGEST = Math.max(RENDERER_WIDTH, RENDERER_HEIGHT);
+export const RENDERER_LARGEST = utils._max(RENDERER_WIDTH, RENDERER_HEIGHT);
 export const RENDERER_SPRITE_RESOLUTION = 512;
 export const MAX_SPRITE_COUNT = 10000;
 export const FLOATS_PER_INSTANCE = 11; // mat3 (9) + layer (1) + opacity (1)
 export const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 
-export type RenderTarget = { fb: WebGLFramebuffer | null; tex: WebGLTexture | null; width: number; height: number };
+export type RenderTarget = { _fb: WebGLFramebuffer | null; _tex: WebGLTexture | null; _width: number; _height: number };
 
-type RenderDataItem = { mat: Float32Array; layer: number; opacity: number };
+type RenderDataItem = { _mat: Float32Array; _layer: number; _opacity: number };
 
 const _walkBuffer: Array<RenderDataItem> = [];
 const _walkView: Array<RenderDataItem> = [];
@@ -54,9 +54,9 @@ const _fillWalkView = (sprite: Sprite, parentMat: Float32Array | null, parentOpa
     const obj = _walkBuffer[_walkView.length] || {};
     _walkBuffer[_walkView.length] = obj;
 
-    obj.mat = utils._mat3Multiply(obj.mat || new Float32Array(9), pxToClip, worldWithTex);
-    obj.layer = assetLibrary._textureIndex(sprite._texture);
-    obj.opacity = combinedOpacity;
+    obj._mat = utils._mat3Multiply(obj._mat || new Float32Array(9), pxToClip, worldWithTex);
+    obj._layer = assetLibrary._textureIndex(sprite._texture);
+    obj._opacity = combinedOpacity;
     _walkView.push(obj);
   }
 
@@ -71,11 +71,11 @@ export const _buildRenderData = (sprites: Sprite[], outRenderBuffer: Float32Arra
 
   let i = 0;
   for (const s of _walkView) {
-    outRenderBuffer[i++] = s.mat[0]; outRenderBuffer[i++] = s.mat[1]; outRenderBuffer[i++] = s.mat[2];
-    outRenderBuffer[i++] = s.mat[3]; outRenderBuffer[i++] = s.mat[4]; outRenderBuffer[i++] = s.mat[5];
-    outRenderBuffer[i++] = s.mat[6]; outRenderBuffer[i++] = s.mat[7]; outRenderBuffer[i++] = s.mat[8];
-    outRenderBuffer[i++] = s.layer | 0;
-    outRenderBuffer[i++] = s.opacity;
+    outRenderBuffer[i++] = s._mat[0]; outRenderBuffer[i++] = s._mat[1]; outRenderBuffer[i++] = s._mat[2];
+    outRenderBuffer[i++] = s._mat[3]; outRenderBuffer[i++] = s._mat[4]; outRenderBuffer[i++] = s._mat[5];
+    outRenderBuffer[i++] = s._mat[6]; outRenderBuffer[i++] = s._mat[7]; outRenderBuffer[i++] = s._mat[8];
+    outRenderBuffer[i++] = s._layer | 0;
+    outRenderBuffer[i++] = s._opacity;
   }
 
   return _walkView.length;
@@ -151,7 +151,7 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
     texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
     gl.framebufferTexture2D(FRAMEBUFFER, gl.COLOR_ATTACHMENT0, TEXTURE_2D, tex, 0);
-    return { fb, tex, width: w, height: h };
+    return { _fb: fb, _tex: tex, _width: w, _height: h };
   };
 
   // instance state
@@ -218,10 +218,10 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
       gl.generateMipmap(TEXTURE_2D);
       texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
       const isLast = (i === postPrograms.length - 1);
-      bindFramebuffer(FRAMEBUFFER, isLast ? null : write.fb);
+      bindFramebuffer(FRAMEBUFFER, isLast ? null : write._fb);
       viewport(0, 0, width, height);
       gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-      readTex = write.tex;
+      readTex = write._tex;
       write = (write === targetA) ? targetB! : targetA!;
     }
   };
@@ -232,14 +232,14 @@ export const createRenderer = (canvas: HTMLCanvasElement) => {
     useProgram(spriteProgram);
 
     //if (!targetA) throw new Error('render targets not created');
-    bindFramebuffer(FRAMEBUFFER, targetA.fb);
-    viewport(0, 0, targetA.width, targetA.height);
+    bindFramebuffer(FRAMEBUFFER, targetA._fb);
+    viewport(0, 0, targetA._width, targetA._height);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.drawArraysInstanced(TRIANGLE_STRIP, 0, 4, spriteCount);
 
-    runPostChain(targetA.tex, targetA.width, targetA.height);
+    runPostChain(targetA._tex, targetA._width, targetA._height);
   };
 
   // initial texture array load (if assets ready)
