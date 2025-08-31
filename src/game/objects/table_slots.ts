@@ -1,6 +1,7 @@
 import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils } from "../../core/utils";
 import { Placement } from "../state";
+import { createBurst } from "./fx";
 
 const flyOffUpdater = (toLeft = true): SpriteUpdater => {
   let rand = utils._rndRange(-0.1, 0.1);
@@ -42,6 +43,7 @@ export const createTableSlots = (): Sprite => {
         placement._sprite!._opacity = 1;
         placement._sprite!._position = [...placement._position];
       } else if (!placement._placed && previouslyPlaced.get(placement)) {
+        base._addChild(createBurst(base, placement._position));
         placement._sprite!._position = [...placement._position];
         placement._sprite!._updater = flyOffUpdater(placement._position[0] < 0.5);
       }
@@ -49,7 +51,7 @@ export const createTableSlots = (): Sprite => {
       previouslyPlaced.set(placement, placement._placed || false);
     }
 
-    if (utils._rndFloat() < 0.001) {
+    if (utils._rndFloat() < 0.01) {
       for (const placement of game._state._placements) {
         placement._placed = false;
       }

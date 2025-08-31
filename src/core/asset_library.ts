@@ -2,7 +2,7 @@ import drawables, { RawDrawableData } from "./assets/drawables.gen";
 import { RENDERER_SPRITE_RESOLUTION } from "./renderer";
 
 const assetLibrary = {
-  _textures: drawables._textures as Record<string, number[][]>,
+  _textures: drawables._textures,
   _textureCache: new Map<string, ImageData>(),
   _textureDataMap: new Map<number[][], number>(),
 
