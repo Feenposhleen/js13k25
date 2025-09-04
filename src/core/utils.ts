@@ -1,3 +1,4 @@
+import { FullState } from "./game_worker";
 import { Sprite, SpriteUpdater } from "./sprite";
 
 export type Vec = [number, number];
@@ -148,19 +149,20 @@ export const utils = {
     sprite: Sprite,
     updaterTo: SpriteUpdater,
     duration: number,
+    onDone?: (game: FullState) => void,
   ): Promise<void> => {
     const updaterFrom = sprite._updater;
     let elapsed = 0;
 
     return new Promise((resolve) => {
-      sprite._updater = (sprite, state, delta) => {
+      sprite._updater = (sprite, game, delta) => {
         elapsed = utils._min(duration, elapsed + delta);
 
         const fromSprite = sprite._copy();
-        updaterFrom(fromSprite, state, delta);
+        updaterFrom(fromSprite, game, delta);
 
         const toSprite = sprite._copy();
-        updaterTo(toSprite, state, delta);
+        updaterTo(toSprite, game, delta);
 
         const t = (elapsed / duration);
         sprite._position[0] = fromSprite._position[0] - ((toSprite._position[0] - fromSprite._position[0]) * t);
@@ -172,6 +174,7 @@ export const utils = {
 
         if (elapsed >= duration) {
           sprite._updater = updaterTo;
+          if (onDone) { onDone(game); }
           resolve();
         }
       };
