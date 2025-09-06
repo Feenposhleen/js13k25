@@ -57,8 +57,8 @@ export const utils = {
 
   _dampenedApproach: (from: Vec, to: Vec, damp: number): Vec => {
     return [
-      from[0] + ((to[0] - from[0]) * damp),
-      from[1] + ((to[1] - from[1]) * damp),
+      from[0] + ((to[0] - from[0]) * Math.min(damp, 1)),
+      from[1] + ((to[1] - from[1]) * Math.min(damp, 1)),
     ];
   },
 
@@ -77,7 +77,7 @@ export const utils = {
   },
 
   _vectorAngle: (pos1: Vec, pos2: Vec): number => {
-    return Math.atan2(pos1[0] - pos2[0], pos1[1] - pos2[1]);
+    return Math.atan2(pos2[1] - pos1[1], pos2[0] - pos1[0]);
   },
 
   _vectorLength: (vector: Vec): number => {
