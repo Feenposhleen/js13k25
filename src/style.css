@@ -10,11 +10,11 @@ body {
 #c {
   display: block;
   touch-action: none;
-  border: 1px solid #ccc;
-  width: 100%;
+  width: calc(min(100%, 100vh * 1.6667));
 }
 
 #p {
+  display: none;
   position: absolute;
   border: 0.4vh solid #fff;
   border-radius: 1vh;

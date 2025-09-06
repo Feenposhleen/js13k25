@@ -1,5 +1,5 @@
 import AssetLibrary from "./asset_library";
-import { MAX_SPRITE_COUNT, FLOATS_PER_INSTANCE } from "./config";
+import { MAX_SPRITE_COUNT, FLOATS_PER_INSTANCE, RENDERER_ASPECT } from "./config";
 import { TransferDataFromWorker } from "./game_worker";
 import createRenderer, { Renderer } from "./renderer";
 import createMiniSequencer, { MiniSequencer } from "./sound";
@@ -71,6 +71,7 @@ const createGameWindow = () => {
     _freeRenderBuffer = buffer;
   };
 
+  // Resize the _canvas to be as big as possible while maintaining aspect ratio
   const _onResize = () => {
     _canvasRect = _canvas.getBoundingClientRect();
   };
@@ -113,12 +114,12 @@ const createGameWindow = () => {
   const _initialize = async (): Promise<void> => {
     await AssetLibrary._preRenderTextures();
 
-    playButton.style.display = 'block';
+    playButton.addEventListener('click', _start);
 
-    //playButton.addEventListener('click', _start);
-    _start();
-
-    utils._wait(2).then(_onResize);
+    utils._wait(1).then(() => {
+      playButton.style.display = 'block';
+      _onResize();
+    });
   }
 
   const _start = async (): Promise<void> => {
@@ -127,6 +128,11 @@ const createGameWindow = () => {
     const audioCtx = new window.AudioContext();
     _music = createMiniSequencer(audioCtx);
     _sfx = createMiniSequencer(audioCtx);
+
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      const doc = document.documentElement;
+      doc.requestFullscreen();
+    }
 
     // _music.playLoop({
     //   bpm: 180,

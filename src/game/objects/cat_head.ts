@@ -5,10 +5,8 @@ import { utils, Vec } from "../../core/utils";
 export const createCatHead = (parentSprite: Sprite) => {
   var _ticks = 0;
   var _lookAtCoordinates: Vec | null;
-  var _pendingLookAt: Promise<void[]> | null = null;
   const _eyes: Array<Sprite> = [];
   const _globalEyeOffset: Vec = [0, 0];
-
 
   const catHeadSprite = createSprite(assetLibrary._textures._catface, [0, 0], [0.8, 0.8], 1, 0.3);
   catHeadSprite._updater = (sprite, _, delta) => {
