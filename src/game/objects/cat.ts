@@ -1,5 +1,5 @@
 import assetLibrary from "../../core/asset_library";
-import createSprite, { SpriteUpdater } from "../../core/sprite";
+import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils } from "../../core/utils";
 
 export const createCat = () => {
@@ -18,7 +18,25 @@ export const createCat = () => {
     ];
   };
 
-  var eyes = [];
+  const createFocusPupilsUpdater = (toTheLeft: boolean): SpriteUpdater => {
+    return (sprite, _, __) => {
+      sprite._scale = [1, 1];
+      sprite._position = [
+        (0.06 * (toTheLeft ? -1 : 1)),
+        0.05,
+      ];
+    };
+  };
+
+  const createFollowCursorPupilsUpdater = (leftEye: boolean): SpriteUpdater => (sprite, state, __) => {
+    sprite._scale = [.8, .8];
+    sprite._position = [
+      (state._input._pointer._coord[0] - .5) * 0.1 * (leftEye ? -1 : 1),
+      (state._input._pointer._coord[1] - .5 + .1) * 0.1,
+    ];
+  };
+
+  var eyes: Array<Sprite> = [];
   for (let i = 0; i < 2; i++) {
     const mult = i ? 1 : -1;
     const eyeSprite = createSprite(assetLibrary._textures._cateye_white, [0.045 * mult, -0.03], [0.12 * mult, 0.12], 1);
@@ -30,23 +48,7 @@ export const createCat = () => {
 
     const pupilSprite = createSprite(assetLibrary._textures._cateye_center, [0, 0], [0.8, 0.8]);
 
-    const chillPupilsUpdater: SpriteUpdater = (sprite, _, __) => {
-      sprite._position = [
-        0.01 * (mult * utils._sin(-_ticks * 2)),
-        sprite._position[1],
-      ];
-    };
-
-    const followCursorPupilsUpdater: SpriteUpdater = (sprite, state, __) => {
-      state._input._pointer._coord
-
-      sprite._position = [
-        (state._input._pointer._coord[0] - .5) * 0.1 * mult,
-        (state._input._pointer._coord[1] - .5 + .1) * 0.1,
-      ];
-    };
-
-    pupilSprite._updater = followCursorPupilsUpdater;
+    pupilSprite._updater = createFollowCursorPupilsUpdater(i === 0);
 
     eyeSprite._addChild(pupilSprite);
     catFaceSprite._addChild(eyeSprite);
@@ -67,30 +69,47 @@ export const createCat = () => {
     sprite._angle = (0.1 * utils._sin(_ticks * 1));
   }
 
-  const attackUpdater: SpriteUpdater = (sprite, state, delta) => {
-    sprite._scale = [0.9, 3];
-    sprite._position = [-0.06, 0.07];
-    sprite._angle = (-0.8 + (utils._sin(_ticks * 20)) * 0.2);
+  const createAttackUpdater = (toTheLeft: boolean): SpriteUpdater => {
+    return (sprite, state, delta) => {
+      sprite._scale = [0.9, 3];
+      sprite._position = [-0.04, 0.05];
+      sprite._angle = (-0.2 + (toTheLeft ? -0.7 : 1.2) + (utils._sin(_ticks * 20)) * 0.2);
+    };
   }
 
   catPawSprite._updater = chillUpdater;
 
-  const attackCycle = async () => utils._wait(3)
-    .then(() => utils._tweenUpdater(catPawSprite, readyUpdater, 0.5))
+  const lookTowards = (left: boolean): Promise<void[]> => {
+    const promises: Array<Promise<void>> = [];
+    for (var i = 0; i < eyes.length; i++) {
+      promises.push(utils._tweenUpdater(eyes[i]._children[0], createFocusPupilsUpdater(i + (left ? 0 : -1) === 0), 0.2));
+    }
+
+    return Promise.all(promises);
+  }
+
+  const attackCycle = async (toTheLeft: boolean) => utils._wait(utils._rndRange(3, 9))
+    .then(() => Promise.all([
+      utils._tweenUpdater(catPawSprite, readyUpdater, 0.5),
+      lookTowards(toTheLeft),
+    ]))
     .then(() => utils._wait(1 + utils._rndFloat() * 2))
-    .then(() => utils._tweenUpdater(catPawSprite, attackUpdater, 0.4, (game) => {
+    .then(() => utils._tweenUpdater(catPawSprite, createAttackUpdater(toTheLeft), 0.4, (game) => {
       for (const placement of game._state._placements) {
-        if (placement._placed && placement._position[0] > 0.5) {
+        if (placement._placed && (toTheLeft && placement._position[0] > 0.5) || (!toTheLeft && placement._position[0] <= 0.5)) {
           placement._placed = false;
         }
       }
     }))
     .then(() => utils._wait(1 + utils._rndFloat()))
-    .then(() => utils._tweenUpdater(catPawSprite, chillUpdater, 0.2))
-    .then(() => utils._wait(3 + utils._rndRange(2, 4)))
-    .then(() => { attackCycle() });
+    .then(() => Promise.all([
+      utils._tweenUpdater(catPawSprite, chillUpdater, 0.2),
+      utils._tweenUpdater(eyes[0]._children[0], createFollowCursorPupilsUpdater(true), 0.2),
+      utils._tweenUpdater(eyes[1]._children[0], createFollowCursorPupilsUpdater(false), 0.2),
+    ]))
+    .then(() => { attackCycle(!toTheLeft) });
 
-  attackCycle();
+  attackCycle(true);
 
   catBodySprite._addChild(catPawSprite);
   catBodySprite._addChild(catFaceSprite);

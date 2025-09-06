@@ -154,18 +154,18 @@ export const utils = {
     const updaterFrom = sprite._updater;
     let elapsed = 0;
 
+    const fromSprite = sprite._copy();
+    const toSprite = sprite._copy();
+
     return new Promise((resolve) => {
       sprite._updater = (sprite, game, delta) => {
         elapsed = utils._min(duration, elapsed + delta);
 
-        const fromSprite = sprite._copy();
         updaterFrom(fromSprite, game, delta);
-
-        const toSprite = sprite._copy();
         updaterTo(toSprite, game, delta);
 
         const t = (elapsed / duration);
-        sprite._position[0] = fromSprite._position[0] - ((toSprite._position[0] - fromSprite._position[0]) * t);
+        sprite._position[0] = fromSprite._position[0] + ((toSprite._position[0] - fromSprite._position[0]) * t);
         sprite._position[1] = fromSprite._position[1] + ((toSprite._position[1] - fromSprite._position[1]) * t);
         sprite._scale[0] = fromSprite._scale[0] + ((toSprite._scale[0] - fromSprite._scale[0]) * t);
         sprite._scale[1] = fromSprite._scale[1] + ((toSprite._scale[1] - fromSprite._scale[1]) * t);

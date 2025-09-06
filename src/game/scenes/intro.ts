@@ -27,9 +27,9 @@ export default () => {
   const selected = createSelected();
 
   introScene._rootSprite._addChild(room);
+  introScene._rootSprite._addChild(tableSlots);
   introScene._rootSprite._addChild(cat);
   introScene._rootSprite._addChild(selectables);
-  introScene._rootSprite._addChild(tableSlots);
   introScene._rootSprite._addChild(selected);
 
   return introScene;
