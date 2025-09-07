@@ -18,13 +18,13 @@ body {
   flex-direction: row;
   gap: 10px;
   height: 800px;
-  width: 1200px;
 }
 
 #left,
 #right {
+  width: 160px;
+  height: 1000px;
   display: flex;
-  justify-content: space-between;
   flex-direction: column;
   align-items: stretch;
 }
@@ -42,13 +42,36 @@ body {
 }
 
 #colors {
-  overflow-y: scroll;
-  scrollbar-width: none;
+  flex: 2;
 }
 
 #textures {
+  flex: 2;
+}
+
+.panel {
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 10px;
+  background: #555;
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
   overflow-y: scroll;
   scrollbar-width: none;
+  gap: 5px;
+}
+
+#left .panel:last-child {
+  flex: 1;
+}
+
+#right .panel {
+  flex: 1;
 }
 
 /* SVG stuff ----------- */
@@ -101,10 +124,17 @@ body {
   padding: 2px;
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: flex-end;
   border-radius: 3px;
   margin-bottom: 4px;
+}
+
+#colors .button-container {
+  padding: 0;
+  margin-bottom: 0px;
+  margin-top: 4px;
+  justify-content: flex-start;
 }
 
 .button-container.active {
@@ -112,7 +142,7 @@ body {
 }
 
 button {
-  width: 100px;
+  flex: 1;
   height: 24px;
   text-align: left;
   border: 2px solid #a2a2a2;
@@ -122,6 +152,7 @@ button {
   font-family: monospace;
   color: white;
   border-radius: 3px;
+  overflow: hidden;
 }
 
 button:hover {
@@ -132,6 +163,7 @@ button.extra,
 .add-color button,
 .add-texture button,
 #colors button {
+  height: 24px;
   width: 24px;
   text-align: center;
   font-size: 10px;
@@ -147,7 +179,7 @@ button.extra,
   cursor: pointer;
   box-sizing: border-box;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: flex-end;
 }
 
@@ -170,18 +202,4 @@ button.extra,
   width: 20px;
   height: 20px;
   border: 1px solid #888;
-}
-
-.panel {
-  border-radius: 5px;
-  padding: 5px;
-  margin-bottom: 10px;
-  background: #555;
-  color: white;
-  font-family: monospace;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 5px;
 }

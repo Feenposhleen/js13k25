@@ -262,6 +262,7 @@ class EditorUI {
     const mainBtn = document.createElement('button');
     mainBtn.classList.add('main');
     mainBtn.innerText = text;
+    mainBtn.title = text;
     if (onClick) mainBtn.addEventListener('click', onClick);
     container.appendChild(mainBtn);
     container.appendChild(extrasContainer);
