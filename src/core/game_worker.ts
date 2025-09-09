@@ -16,7 +16,7 @@ export const defaultWorkerTransferData = (): TransferDataFromWorker => ({
 });
 
 export type FullState = {
-  _game: GameWorker;
+  _worker: GameWorker;
   _state: GameState;
   _input: InputState;
 }
@@ -48,6 +48,8 @@ const createGameWorker = () => {
     const delta = (now - _lastTs) / 1000;
     _lastTs = now;
 
+    gameWorker._ticks += delta;
+
     if (!_sceneTree.length) return;
     for (const scene of _sceneTree) {
       if (!scene._paused) {
@@ -62,9 +64,10 @@ const createGameWorker = () => {
   };
 
   const gameWorker = {
+    _ticks: 0,
     _initialize(initialScene: Scene, initialState: GameState) {
       _state = {
-        _game: gameWorker,
+        _worker: gameWorker,
         _state: initialState,
         _input: _input,
       };

@@ -1,9 +1,8 @@
 import { Game } from "../core/game";
-import createIntroScene from "./scenes/intro";
-import { createStressScene } from "./scenes/stress";
+import { createGameplayScene } from "./scenes/gameplay";
 import { createInitialState } from "./state";
 
 new Game(
-  createIntroScene(),
+  createGameplayScene(),
   createInitialState(),
 );

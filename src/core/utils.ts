@@ -18,8 +18,14 @@ export const utils = {
 
   _max: Math.max,
 
+  _abs: Math.abs,
+
   _rndFloat: (): number => {
     return Math.random();
+  },
+
+  _rndBool: (): boolean => {
+    return (utils._rndFloat() > 0.5);
   },
 
   _rndOne: (): number => {

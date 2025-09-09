@@ -3,16 +3,14 @@ import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils, Vec } from "../../core/utils";
 
 export const createCatHead = (parentSprite: Sprite) => {
-  var _ticks = 0;
   var _lookAtCoordinates: Vec | null;
   const _eyes: Array<Sprite> = [];
   const _globalEyeOffset: Vec = [0, 0];
 
   const catHeadSprite = createSprite(assetLibrary._textures._catface, [0, 0], [0.8, 0.8], 1, 0.3);
-  catHeadSprite._updater = (sprite, _, delta) => {
-    _ticks += delta;
+  catHeadSprite._updater = (sprite, game, _) => {
     sprite._position = [
-      0.01 + (0.01 * utils._sin(_ticks * 2)),
+      0.01 + (0.01 * utils._sin(game._worker._ticks * 2)),
       sprite._position[1],
     ];
   };
@@ -28,8 +26,8 @@ export const createCatHead = (parentSprite: Sprite) => {
     );
 
 
-    eyeSprite._updater = (sprite, _, __) => {
-      const blink = (utils._sin(_ticks * 1.5) + 1) / 2;
+    eyeSprite._updater = (sprite, game, __) => {
+      const blink = (utils._sin(game._worker._ticks * 1.5) + 1) / 2;
       sprite._scale[1] = 0.12 * (blink > 0.98 ? 0.1 : 1);
     };
 

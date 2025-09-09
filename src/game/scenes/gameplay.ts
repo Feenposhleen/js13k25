@@ -1,14 +1,15 @@
 import createScene, { Scene } from "../../core/scene";
 import { createCat } from "../objects/cat";
+import { createCrazyBar } from "../objects/crazy_bar";
 import { createRoom } from "../objects/room";
 import { createSelectables } from "../objects/selectables";
 import { createSelected } from "../objects/selected";
 import { createTableSlots } from "../objects/table_slots";
 
-export default () => {
+export const createGameplayScene = () => {
   var _ticks = 0;
 
-  const introScene = createScene((scene, state, delta) => {
+  const gameplayScene = createScene((scene, state, delta) => {
     _ticks += delta;
   });
 
@@ -23,14 +24,17 @@ export default () => {
   cat._scale = [0.5, 0.5];
 
   const tableSlots = createTableSlots();
+  const crazyBar = createCrazyBar();
+  crazyBar._position = [0.5, 0.1];
 
   const selected = createSelected();
 
-  introScene._rootSprite._addChild(room);
-  introScene._rootSprite._addChild(tableSlots);
-  introScene._rootSprite._addChild(cat);
-  introScene._rootSprite._addChild(selectables);
-  introScene._rootSprite._addChild(selected);
+  gameplayScene._rootSprite._addChild(room);
+  gameplayScene._rootSprite._addChild(tableSlots);
+  gameplayScene._rootSprite._addChild(cat);
+  gameplayScene._rootSprite._addChild(selectables);
+  gameplayScene._rootSprite._addChild(selected);
+  gameplayScene._rootSprite._addChild(crazyBar);
 
-  return introScene;
-}
+  return gameplayScene;
+};

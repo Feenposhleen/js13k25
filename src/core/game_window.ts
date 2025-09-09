@@ -114,11 +114,12 @@ const createGameWindow = () => {
   const _initialize = async (): Promise<void> => {
     await AssetLibrary._preRenderTextures();
 
-    playButton.addEventListener('click', _start);
+    // playButton.addEventListener('click', _start); // DEV
 
     utils._wait(1).then(() => {
       playButton.style.display = 'block';
       _onResize();
+      _start(); // DEV
     });
   }
 
