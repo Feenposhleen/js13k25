@@ -30,7 +30,7 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     const tableSlots = createTableSlots();
 
 
-    const selected = createSelected(game._state._pickupables, game._state._placeables);
+    const selected = createSelected();
 
     scene._rootSprite._addChild(room);
     scene._rootSprite._addChild(tableSlots);

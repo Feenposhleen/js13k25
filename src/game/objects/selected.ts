@@ -1,13 +1,10 @@
 import assetLibrary from "../../core/asset_library";
 import createSprite, { Sprite } from "../../core/sprite";
 import { utils, Vec } from "../../core/utils";
-import { GameState } from "../state";
+import { GameState, pickupables, placeables } from "../state";
 import { getClosestFreeSlot } from "./table_slots";
 
-export const createSelected = (
-  pickupables: GameState['_pickupables'],
-  placeables: GameState['_placeables'],
-): Sprite => {
+export const createSelected = (): Sprite => {
   var lastSelected: string | null = null;
   const base = createSprite(null, [0, 0]);
 
@@ -16,13 +13,13 @@ export const createSelected = (
 
   const selectedItemSprite = createSprite(null, [-0.45, -0.33], [0.35, 0.35]);
   selectedItemSprite._updater = (_, game, delta) => {
-    if (game._state._selectedItem !== lastSelected) {
+    if (game._state._levelState!._selectedItem !== lastSelected) {
       selectedItemSprite._position[0] = game._input._pointer._coord[0] + utils._sin(game._worker._ticks * 3) * 0.02;
       selectedItemSprite._position[1] = game._input._pointer._coord[1] + utils._cos(game._worker._ticks * 3) * 0.02;
 
-      if (game._state._selectedItem) {
-        selectedItemSprite._texture = (placeables as Record<string, number[][]>)[game._state._selectedItem] || (pickupables as Record<string, number[][]>)[game._state._selectedItem];
-        lastSelected = game._state._selectedItem;
+      if (game._state._levelState!._selectedItem) {
+        selectedItemSprite._texture = (placeables as Record<string, number[][]>)[game._state._levelState!._selectedItem] || (pickupables as Record<string, number[][]>)[game._state._levelState!._selectedItem];
+        lastSelected = game._state._levelState!._selectedItem;
 
         if (selectedItemSprite._texture === assetLibrary._textures._pickup_swatter
           || selectedItemSprite._texture === assetLibrary._textures._pickup_wand) {
@@ -45,8 +42,8 @@ export const createSelected = (
           selectedItemSprite._angle = utils._sin(-3 - selectedItemSprite._position[0]);
         } else {
           selectedItemSprite._position = utils._dampenedApproach(selectedItemSprite._position, game._input._pointer._coord, 0.1);
-          selectedItemSprite._position[0] += utils._sin(game._worker._ticks * 3) * game._state._dizzyness;
-          selectedItemSprite._position[1] += utils._cos(game._worker._ticks * 3) * game._state._dizzyness;
+          selectedItemSprite._position[0] += utils._sin(game._worker._ticks * 3) * game._state._levelState!._dizzyness;
+          selectedItemSprite._position[1] += utils._cos(game._worker._ticks * 3) * game._state._levelState!._dizzyness;
           selectedItemSprite._angle = 0.03 * utils._sin(game._worker._ticks * 3);
         }
 
@@ -64,7 +61,7 @@ export const createSelected = (
 
           if (utils._simpleDistance(selectedItemSprite._position, slot._position) < 0.01) {
             game._state._levelState?._placedItems.set(slot, true);
-            game._state._selectedItem = null;
+            game._state._levelState!._selectedItem = null;
           }
         }
       } else {

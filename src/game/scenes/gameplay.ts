@@ -25,16 +25,30 @@ const level3 = {
 } as LevelData;
 
 const level4 = {
+  _wandAvailable: false,
+  _swatterAvailable: true,
+  _flySpawnRate: 0.1,
+  _baseCrazyMod: 0.1
+} as LevelData;
+
+const level5 = {
   _wandAvailable: true,
   _swatterAvailable: true,
   _flySpawnRate: 0.1,
   _baseCrazyMod: 0.2
 } as LevelData;
 
+const level6 = {
+  _wandAvailable: true,
+  _swatterAvailable: true,
+  _flySpawnRate: 0.2,
+  _baseCrazyMod: 0.3
+} as LevelData;
+
 export const createGameplayScene = () => createScene(async (scene, game) => {
   let cancelled = false;
 
-  for (const levelData of [level1, level2, level3, level4]) {
+  for (const levelData of [level1, level2, level3, level4, level5, level6]) {
     if (cancelled) break;
     await new Promise(res => {
       const level = createGameplayLevel(levelData, res as VoidFunction);

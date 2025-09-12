@@ -36,7 +36,7 @@ export const createSelectables = (levelData: LevelData): Sprite => {
     content._addChild(obj);
 
     content._updater = (sprite, state) => {
-      if (state._state._selectedItem === key) {
+      if (state._state._levelState!._selectedItem === key) {
         sprite._children[0]._opacity = 0;
         base._scale[0] = 0.26;
         sprite._texture = assetLibrary._textures._ui_square;
@@ -47,7 +47,7 @@ export const createSelectables = (levelData: LevelData): Sprite => {
 
         if (distance < 0.06) {
           if (state._input._pointer._down && !state._input._pointer._buttonIndex) {
-            state._state._selectedItem = key;
+            state._state._levelState!._selectedItem = key;
           }
           sprite._opacity = 1;
           base._scale[0] = 0.3;

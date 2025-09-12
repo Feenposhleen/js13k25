@@ -35,12 +35,6 @@ export const createState = () => {
     _paused: false,
     _levelState: null as LevelState | null,
     _done: false,
-    _selectedItem: null as string | null,
-    _dizzyness: 0.002,
-    _crazyness: 0,
-    _placedItems: {} as Record<string, number[][]>,
-    _placeables: placeables,
-    _pickupables: pickupables,
   }
 }
 
