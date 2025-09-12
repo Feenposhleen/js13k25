@@ -1,5 +1,6 @@
 import { Game } from "../core/game";
-import { createGameplayScene } from "./scenes/gameplay";
+import { createGameplayScene, level2 } from "./scenes/gameplay";
+import { createInterstitial } from "./scenes/interstitial";
 import { createState } from "./state";
 
 new Game(

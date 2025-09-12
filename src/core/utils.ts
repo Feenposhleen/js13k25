@@ -105,6 +105,13 @@ export const utils = {
     ];
   },
 
+  _vectorLerp: (from: Vec, to: Vec, t: number): Vec => {
+    return [
+      from[0] + ((to[0] - from[0]) * utils._clamp(t, 0, 1)),
+      from[1] + ((to[1] - from[1]) * utils._clamp(t, 0, 1)),
+    ];
+  },
+
   // mat3 helpers (column-major)
 
   _mat3Multiply: (out: Float32Array, a: Float32Array, b: Float32Array) => {

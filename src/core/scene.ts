@@ -16,7 +16,6 @@ export type SceneInitializer = (scene: Scene, game: FullState) => void;
 export type SceneUpdater = (scene: Scene, state: FullState, delta: number) => void;
 
 export default (initializer?: SceneInitializer) => {
-  let initilai
   const _scene: Scene = {
     _paused: false,
     _done: false,
