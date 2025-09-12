@@ -4,14 +4,14 @@ import { Placement } from "../state";
 import { createBurst } from "./fx";
 
 const flyOffUpdater = (toLeft = true): SpriteUpdater => {
-  let rand = utils._rndRange(-0.1, 0.1);
+  let rand = utils._rndRange(-0.2, 0.2);
   let elapsed = 0;
   const duration = 0.5;
 
   return (sprite, _, delta) => {
     elapsed = elapsed + delta;
 
-    sprite._position[0] += (delta * 0.5) * (toLeft ? -1 : 1);
+    sprite._position[0] += (delta * 0.2) * (toLeft ? -1 : 1);
     sprite._angle += rand;
     sprite._opacity = 1 - (elapsed / duration);
     if (elapsed >= duration) {

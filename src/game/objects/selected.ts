@@ -1,10 +1,12 @@
 import assetLibrary from "../../core/asset_library";
 import createSprite, { Sprite } from "../../core/sprite";
 import { utils, Vec } from "../../core/utils";
-import { getClosestFreePlacement } from "../state";
-import { pickupables, placeables } from "./selectables";
+import { GameState, getClosestFreePlacement } from "../state";
 
-export const createSelected = (): Sprite => {
+export const createSelected = (
+  pickupables: GameState['_pickupables'],
+  placeables: GameState['_placeables'],
+): Sprite => {
   var lastSelected: string | null = null;
   const base = createSprite(null, [0, 0]);
 
@@ -18,18 +20,34 @@ export const createSelected = (): Sprite => {
       selectedItemSprite._position[1] = game._input._pointer._coord[1] + utils._cos(game._worker._ticks * 3) * 0.02;
 
       if (game._state._selectedItem) {
-        selectedItemSprite._texture = placeables[game._state._selectedItem] || pickupables[game._state._selectedItem];
+        selectedItemSprite._texture = (placeables as Record<string, number[][]>)[game._state._selectedItem] || (pickupables as Record<string, number[][]>)[game._state._selectedItem];
         lastSelected = game._state._selectedItem;
+
+        if (selectedItemSprite._texture === assetLibrary._textures._pickup_swatter
+          || selectedItemSprite._texture === assetLibrary._textures._pickup_wand) {
+          selectedItemSprite._scale = [.8, .8];
+        } else {
+          selectedItemSprite._scale = [.35, .35];
+        }
       } else {
         selectedItemSprite._texture = null;
         lastSelected = null;
       }
     } else {
       if (selectedItemSprite._texture) {
-        selectedItemSprite._position = utils._dampenedApproach(selectedItemSprite._position, game._input._pointer._coord, 0.1);
-        selectedItemSprite._position[0] += utils._sin(game._worker._ticks * 3) * game._state._dizzyness;
-        selectedItemSprite._position[1] += utils._cos(game._worker._ticks * 3) * game._state._dizzyness;
-        selectedItemSprite._angle = 0.03 * utils._sin(game._worker._ticks * 3);
+        selectedItemSprite._position = utils._dampenedApproach(selectedItemSprite._position, game._input._pointer._coord, 0.01 * delta);
+
+        if (selectedItemSprite._texture === assetLibrary._textures._pickup_swatter
+          || selectedItemSprite._texture === assetLibrary._textures._pickup_wand) {
+          selectedItemSprite._position = utils._dampenedApproach(selectedItemSprite._position, game._input._pointer._coord, 0.1);
+          selectedItemSprite._position = utils._vectorAdd(selectedItemSprite._position, [0.01, 0.03]);
+          selectedItemSprite._angle = utils._sin(-3 - selectedItemSprite._position[0]);
+        } else {
+          selectedItemSprite._position = utils._dampenedApproach(selectedItemSprite._position, game._input._pointer._coord, 0.1);
+          selectedItemSprite._position[0] += utils._sin(game._worker._ticks * 3) * game._state._dizzyness;
+          selectedItemSprite._position[1] += utils._cos(game._worker._ticks * 3) * game._state._dizzyness;
+          selectedItemSprite._angle = 0.03 * utils._sin(game._worker._ticks * 3);
+        }
 
         const placement = getClosestFreePlacement(
           game._state,
@@ -43,7 +61,7 @@ export const createSelected = (): Sprite => {
           hintSprite._position = [...placement._position];
           hintSprite._scale = placement._scale;
 
-          if (utils._simpleDistance(selectedItemSprite._position, placement._position) < 0.02) {
+          if (utils._simpleDistance(selectedItemSprite._position, placement._position) < 0.01) {
             placement._placed = true;
             game._state._selectedItem = null;
           }

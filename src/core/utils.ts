@@ -10,6 +10,12 @@ export const utils = {
     return document.querySelector(selector);
   },
 
+  _keys: Object.keys,
+
+  _keyOf: <T>(obj: Record<string, T>, val: T): string => {
+    return utils._keys(obj).find(key => obj[key] === val) || '';
+  },
+
   _sin: Math.sin,
 
   _cos: Math.cos,
@@ -19,6 +25,8 @@ export const utils = {
   _max: Math.max,
 
   _abs: Math.abs,
+
+  _pi: Math.PI,
 
   _rndFloat: (): number => {
     return Math.random();
@@ -32,8 +40,8 @@ export const utils = {
     return (utils._rndFloat() - 0.5) * 2;
   },
 
-  _rndRange: (point: number, spread = 10): number => {
-    return point + (utils._rndOne() * spread);
+  _rndRange: (min: number, max: number): number => {
+    return min + (max - min * utils._rndOne());
   },
 
   _rndInt: (max: number, min = 0): number => {
