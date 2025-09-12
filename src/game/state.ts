@@ -30,14 +30,13 @@ export const pickupables = {
   _swatter: assetLibrary._textures._pickup_swatter,
 }
 
-export const createState = (levelData: LevelData) => {
+export const createState = () => {
   return {
     _paused: false,
     _done: false,
     _selectedItem: null as string | null,
     _dizzyness: 0.002,
     _crazyness: 0,
-    _levelData: levelData as LevelData,
     _placements: [
       { _texture: assetLibrary._textures._utensil_knife, _position: <Vec>[0.62, 0.55], _scale: <Vec>[0.32, 0.32], _placed: false, _sprite: null as Sprite | null },
       { _texture: assetLibrary._textures._utensil_fork, _position: <Vec>[0.38, 0.55], _scale: <Vec>[-0.3, 0.3], _placed: false, _sprite: null as Sprite | null },

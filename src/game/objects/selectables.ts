@@ -10,10 +10,10 @@ export const createSelectables = (levelData: LevelData): Sprite => {
 
   const placeableKeys = Object.keys(placeables);
 
-  const pickupableKeys = Object.keys(pickupables).filter(key => {
+  const pickupableKeys = Object.keys(pickupables).filter(key =>
     (key !== utils._keyOf(pickupables, pickupables._wand) || levelData._wandAvailable)
-      && (utils._keyOf(pickupables, pickupables._swatter) || levelData._swatterAvailable);
-  });
+    && (key !== utils._keyOf(pickupables, pickupables._swatter) || levelData._swatterAvailable)
+  );
 
   for (const key of [...placeableKeys, ...pickupableKeys]) {
     const placeable = !!(placeables as Record<string, number[][]>)[key];

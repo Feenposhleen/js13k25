@@ -1,8 +1,9 @@
 import assetLibrary from "../../core/asset_library";
 import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils, Vec } from "../../core/utils";
+import { LevelData } from "../state";
 
-export const createCatHead = (parentSprite: Sprite) => {
+export const createCatHead = (parentSprite: Sprite, levelData: LevelData) => {
   var _lookAtCoordinates: Vec | null;
   const _eyes: Array<Sprite> = [];
   const _globalEyeOffset: Vec = [0, 0];
@@ -10,7 +11,7 @@ export const createCatHead = (parentSprite: Sprite) => {
   const catHeadSprite = createSprite(assetLibrary._textures._catface, [0, 0], [0.8, 0.8], 1, 0.3);
   catHeadSprite._updater = (sprite, game, _) => {
     sprite._position = [
-      0.01 + (0.01 * utils._sin(game._worker._ticks * 2)),
+      0.01 * (utils._sin(game._worker._ticks * 10 * levelData._baseCrazyMod)),
       sprite._position[1],
     ];
   };

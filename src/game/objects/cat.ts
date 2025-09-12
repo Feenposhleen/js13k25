@@ -1,11 +1,12 @@
 import assetLibrary from "../../core/asset_library";
 import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils } from "../../core/utils";
+import { LevelData } from "../state";
 import { createCatHead } from "./cat_head";
 
-export const createCat = () => {
+export const createCat = (levelData: LevelData) => {
   const catBodySprite = createSprite(assetLibrary._textures._catbody, [0, 0], [1, 1]);
-  const catHead = createCatHead(catBodySprite);
+  const catHead = createCatHead(catBodySprite, levelData);
   const catPawSprite = createSprite(assetLibrary._textures._catpaw, [-0.06, 0], [1.2, 1.2], 1, 3);
   let ongoingAttack: Promise<void> | null = null;
 

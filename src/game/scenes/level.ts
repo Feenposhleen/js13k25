@@ -14,7 +14,7 @@ export const createGameplayLevel = (levelData: LevelData) => createScene((scene,
 
   const selectables = createSelectables(levelData);
 
-  const cat = createCat();
+  const cat = createCat(levelData);
   cat._position = [0.5, 0.4];
   cat._scale = [0.5, 0.5];
 
