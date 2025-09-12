@@ -1,4 +1,5 @@
 import assetLibrary from "../../core/asset_library";
+import { FullState } from "../../core/game_worker";
 import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils } from "../../core/utils";
 import { LevelData } from "../state";
@@ -33,19 +34,24 @@ export const createCat = (levelData: LevelData) => {
 
   catPawSprite._updater = chillUpdater;
 
-  const attackCycle = async (toTheLeft: boolean) => Promise.all([
+  const attackCycle = async (toTheLeft: boolean, game: FullState) => Promise.all([
     utils._tweenUpdater(catPawSprite, readyUpdater, 0.5),
     catHead._lookAt([toTheLeft ? 0.2 : 0.8, 0.9]),
   ])
     .then(() => utils._wait(1 + utils._rndFloat() * 2))
-    .then(() => utils._tweenUpdater(catPawSprite, createAttackUpdater(toTheLeft), 0.4, (game) => {
-      for (const slot of slots) {
-        if (game._state._levelState!._placedItems.get(slot) && ((toTheLeft && slot._position[0] < 0.5) || (!toTheLeft && slot._position[0] >= 0.5))) {
-          game._state._levelState!._placedItems.set(slot, false);
-        }
+    .then(() => {
+      if (game._state._crazyness > 0.5) {
+        return utils._tweenUpdater(catPawSprite, createAttackUpdater(toTheLeft), 0.4, (game) => {
+          for (const slot of slots) {
+            if (game._state._levelState!._placedItems.get(slot) && ((toTheLeft && slot._position[0] < 0.5) || (!toTheLeft && slot._position[0] >= 0.5))) {
+              game._state._levelState!._placedItems.set(slot, false);
+            }
+          }
+        }).then(() => { game._state._crazyness = utils._clamp(game._state._crazyness - 0.4, 0, 1); });;
       }
-    }))
-    .then(() => utils._wait(1 + utils._rndFloat()))
+
+      return Promise.resolve();
+    })
     .then(() => Promise.all([
       utils._tweenUpdater(catPawSprite, chillUpdater, 0.2),
     ]))
@@ -57,7 +63,7 @@ export const createCat = (levelData: LevelData) => {
 
   catBodySprite._updater = (sprite, game, delta) => {
     if (game._state._crazyness > 0.5 && !ongoingAttack) {
-      ongoingAttack = attackCycle(utils._rndBool()).then(() => { game._state._crazyness = utils._clamp(game._state._crazyness - 0.3, 0, 1); });
+      ongoingAttack = attackCycle(utils._rndBool(), game)
     }
   };
 

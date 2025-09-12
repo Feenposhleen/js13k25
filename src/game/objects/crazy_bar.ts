@@ -10,7 +10,7 @@ export const createCrazyBar = (): Sprite => {
       crazyMod = -0.1;
     }
 
-    game._state._crazyness = utils._clamp(game._state._crazyness + (delta * crazyMod), 0, 1);
+    game._state._crazyness = utils._clamp(game._state._crazyness + (delta * game._state._levelState!._levelData._baseCrazyMod * 10 * crazyMod), 0, 1);
   }
 
   const bgSprite = createSprite(assetLibrary._textures._ui_grey_square, [0, 0], [0.8, 0.1]);
