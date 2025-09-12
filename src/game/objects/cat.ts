@@ -3,6 +3,7 @@ import createSprite, { Sprite, SpriteUpdater } from "../../core/sprite";
 import { utils } from "../../core/utils";
 import { LevelData } from "../state";
 import { createCatHead } from "./cat_head";
+import { slots } from "./table_slots";
 
 export const createCat = (levelData: LevelData) => {
   const catBodySprite = createSprite(assetLibrary._textures._catbody, [0, 0], [1, 1]);
@@ -38,9 +39,9 @@ export const createCat = (levelData: LevelData) => {
   ])
     .then(() => utils._wait(1 + utils._rndFloat() * 2))
     .then(() => utils._tweenUpdater(catPawSprite, createAttackUpdater(toTheLeft), 0.4, (game) => {
-      for (const placement of game._state._placements) {
-        if (placement._placed && (toTheLeft && placement._position[0] < 0.5) || (!toTheLeft && placement._position[0] >= 0.5)) {
-          placement._placed = false;
+      for (const slot of slots) {
+        if (game._state._levelState!._placedItems.get(slot) && ((toTheLeft && slot._position[0] < 0.5) || (!toTheLeft && slot._position[0] >= 0.5))) {
+          game._state._levelState!._placedItems.set(slot, false);
         }
       }
     }))

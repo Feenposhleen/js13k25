@@ -1,7 +1,8 @@
 import assetLibrary from "../../core/asset_library";
 import createSprite, { Sprite } from "../../core/sprite";
 import { utils, Vec } from "../../core/utils";
-import { GameState, getClosestFreePlacement } from "../state";
+import { GameState } from "../state";
+import { getClosestFreeSlot } from "./table_slots";
 
 export const createSelected = (
   pickupables: GameState['_pickupables'],
@@ -49,20 +50,20 @@ export const createSelected = (
           selectedItemSprite._angle = 0.03 * utils._sin(game._worker._ticks * 3);
         }
 
-        const placement = getClosestFreePlacement(
+        const slot = getClosestFreeSlot(
           game._state,
           selectedItemSprite._texture!,
           game._input._pointer._coord
         );
 
-        if (placement) {
+        if (slot) {
           hintSprite._texture = selectedItemSprite._texture;
 
-          hintSprite._position = [...placement._position];
-          hintSprite._scale = placement._scale;
+          hintSprite._position = [...slot._position] as Vec;
+          hintSprite._scale = slot._scale;
 
-          if (utils._simpleDistance(selectedItemSprite._position, placement._position) < 0.01) {
-            placement._placed = true;
+          if (utils._simpleDistance(selectedItemSprite._position, slot._position) < 0.01) {
+            game._state._levelState?._placedItems.set(slot, true);
             game._state._selectedItem = null;
           }
         }

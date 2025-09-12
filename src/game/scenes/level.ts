@@ -1,4 +1,3 @@
-import assetLibrary from "../../core/asset_library";
 import createScene, { Scene } from "../../core/scene";
 import { createCat } from "../objects/cat";
 import { createCrazyBar } from "../objects/crazy_bar";
@@ -9,6 +8,14 @@ import { createTableSlots } from "../objects/table_slots";
 import { LevelData } from "../state";
 
 export const createGameplayLevel = (levelData: LevelData) => createScene((scene, game) => {
+  game._state._levelState = {
+    _levelData: levelData,
+    _selectedItem: null,
+    _dizzyness: 0.002,
+    _crazyness: 0,
+    _placedItems: new Map(),
+  };
+
   const room = createRoom();
   room._position = [0.5, 0.5];
 
