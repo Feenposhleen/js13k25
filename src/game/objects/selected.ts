@@ -63,6 +63,7 @@ export const createSelected = (): Sprite => {
           if (utils._simpleDistance(selectedItemSprite._position, slot._position) < 0.01) {
             game._state._levelState?._placedItems.set(slot, true);
             game._state._levelState!._selectedItem = null;
+            game._worker._playSfx(1);
           }
         }
       } else {

@@ -15,14 +15,14 @@ export const level2 = {
   _wandAvailable: false,
   _swatterAvailable: false,
   _flySpawnInterval: 0,
-  _baseCrazyMod: 0.1
+  _baseCrazyMod: 0.24
 } as LevelData;
 
 export const level3 = {
   _wandAvailable: true,
   _swatterAvailable: false,
   _flySpawnInterval: 0,
-  _baseCrazyMod: 0.2
+  _baseCrazyMod: 0.3
 } as LevelData;
 
 export const level4 = {
@@ -47,10 +47,10 @@ export const level6 = {
 } as LevelData;
 
 export const createGameplayScene = () => createScene(async (scene, game) => {
+  game._worker._setMusic(1)
   let cancelled = false;
 
   for (const levelData of [level1, level2, level3, level4, level5, level6]) {
-
     if (cancelled) break;
     await new Promise(res => {
       const level = createInterstitial(levelData, res as VoidFunction);

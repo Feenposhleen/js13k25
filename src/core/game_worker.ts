@@ -8,11 +8,15 @@ import { Vec } from "./utils";
 export type TransferDataFromWorker = {
   _renderArray: Float32Array;
   _spriteCount: number;
+  _music: number | null;
+  _sfx: number[] | null;
 }
 
 export const defaultWorkerTransferData = (): TransferDataFromWorker => ({
   _renderArray: new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE),
   _spriteCount: 0,
+  _music: null,
+  _sfx: null,
 });
 
 export type FullState = {
@@ -29,6 +33,8 @@ const createGameWorker = () => {
   var _lastTs: number = 0;
   var _state: FullState | undefined = undefined;
   var _input: InputState = { _keys: _keys, _pointer: _pointer };
+  var _pendingMusic: number | null = null;
+  var _pendingSfx: number[] = [];
 
   self.onmessage = ({ data }: { data: TransferDataFromWindow }) => {
     if (!_state) return;
@@ -37,8 +43,17 @@ const createGameWorker = () => {
   };
 
   const _updateWindow = (renderBuffer: Float32Array, spriteCount: number) => {
-    const data: TransferDataFromWorker = { _renderArray: renderBuffer, _spriteCount: spriteCount };
+    const data: TransferDataFromWorker = {
+      _renderArray: renderBuffer,
+      _spriteCount: spriteCount,
+      _music: _pendingMusic,
+      _sfx: _pendingSfx.length ? _pendingSfx : null,
+    };
+
     (self as any).postMessage(data, [renderBuffer.buffer]);
+
+    _pendingMusic = null;
+    _pendingSfx = [];
   };
 
   const _updateGame = async (renderBuffer: Float32Array) => {
@@ -82,6 +97,12 @@ const createGameWorker = () => {
     },
     _removeScene(scene: Scene) {
       _sceneTree = _sceneTree.filter((existingScene) => existingScene !== scene);
+    },
+    _setMusic(musicId: number) {
+      _pendingMusic = musicId;
+    },
+    _playSfx(sfxId: number) {
+      _pendingSfx.push(sfxId);
     },
   };
 

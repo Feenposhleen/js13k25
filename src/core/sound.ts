@@ -1,6 +1,6 @@
 import { utils } from "./utils";
 
-type PlayOptions = {
+export type PlayOptions = {
   _bpm: number;
   _octave?: number;
   _bass?: number[];
@@ -134,15 +134,28 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     }
   };
 
+  const toHardOpts = (playOpts: PlayOptions): PlayOptionsHard => ({
+    _bpm: playOpts._bpm,
+    _octave: playOpts._octave || 1,
+    _bass: playOpts._bass || [],
+    _chords: playOpts._chords || [],
+    _snare: playOpts._snare || [],
+    _kick: playOpts._kick || [],
+  });
+
+  const playSingle = (playOpts: PlayOptions) => {
+    const opts = toHardOpts(playOpts);
+    const t = _ctx.currentTime;
+    const d = 0;
+
+    if (opts._kick[0]) _kick(t);
+    if (opts._snare[0]) _snare(t);
+    if (opts._bass[0]) _bass(t, d, opts._octave);
+    if (opts._chords[0]) _chord(t, d, opts._octave);
+  }
+
   const playLoop = (playOpts: PlayOptions) => {
-    _opts = {
-      _octave: 1,
-      _bass: [],
-      _chords: [],
-      _kick: [],
-      _snare: [],
-      ...playOpts,
-    };
+    _opts = toHardOpts(playOpts);
 
     _steps = utils._max(
       _opts._bass.length,
@@ -169,6 +182,7 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
 
   return {
     playLoop,
+    playSingle,
     stop,
   };
 };

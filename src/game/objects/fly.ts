@@ -52,7 +52,7 @@ export const createFly = (onSmashed: VoidFunction): Sprite => {
     game._state._levelState!._flyPosition = jittered;
 
     const centerCloseness = (2 - utils._simpleDistance(sprite._position, [0.5, 0.5]));
-    game._state._levelState!._crazyness += delta * centerCloseness * game._state._levelState!._levelData._baseCrazyMod * 0.1;
+    game._state._levelState!._crazyness += delta * centerCloseness * game._state._levelState!._levelData._baseCrazyMod * 0.3;
 
     if (game._state._levelState?._selectedItem === utils._keyOf(pickupables, pickupables._swatter)) {
       if (utils._simpleDistance(game._input._pointer._coord, fly._position) < 0.1) {

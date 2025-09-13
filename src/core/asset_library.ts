@@ -1,5 +1,6 @@
 import drawables, { RawDrawableData } from "./assets/drawables.gen";
 import { RENDERER_SPRITE_RESOLUTION } from "./config";
+import { PlayOptions } from "./sound";
 
 const assetLibrary = {
   _textures: drawables._textures,
@@ -65,6 +66,53 @@ const assetLibrary = {
     }
 
     return this._textureDataMap.get(data)!;
+  },
+
+  _getMusic(id: number): PlayOptions {
+    switch (id) {
+      case 1:
+        return {
+          _bpm: 120,
+          _bass: [
+            0, 1, 0, 0,
+            1, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 0, 0, 0,
+          ],
+          _snare: [
+            0, 0, 1, 0,
+            0, 0, 1, 0,
+          ],
+          _chords: [
+            1, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 0, 1, 0,
+          ],
+          _kick: [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+          ],
+        };
+      default:
+        return {
+          _bpm: 120,
+        };
+    }
+  },
+
+  _getSfx(id: number): PlayOptions {
+    switch (id) {
+      case 1:
+        return {
+          _bpm: 120,
+          _bass: [1],
+          _octave: 2,
+        };
+      default:
+        return {
+          _bpm: 120,
+        };
+    }
   },
 };
 

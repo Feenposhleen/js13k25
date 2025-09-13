@@ -1,3 +1,4 @@
+import assetLibrary from "./asset_library";
 import AssetLibrary from "./asset_library";
 import { MAX_SPRITE_COUNT, FLOATS_PER_INSTANCE, RENDERER_ASPECT } from "./config";
 import { TransferDataFromWorker } from "./game_worker";
@@ -40,8 +41,7 @@ const createGameWindow = () => {
   let _freeRenderBuffer: Float32Array | null = new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE);
 
   // Audio
-  let _music: MiniSequencer | null = null;
-  let _sfx: MiniSequencer | null = null;
+  let _sound: MiniSequencer | null = null;
 
   _worker.onmessage = (ev: MessageEvent<TransferDataFromWorker>) => {
     _receiveFrame(ev.data);
@@ -51,6 +51,16 @@ const createGameWindow = () => {
     if (data._renderArray) {
       _drawFrame(data._renderArray, data._spriteCount);
       _freeRenderBuffer = data._renderArray;
+    }
+
+    if (data._music !== null && _sound) {
+      _sound!.playLoop(assetLibrary._getMusic(data._music));
+    }
+
+    if (data._sfx && _sound) {
+      data._sfx.forEach(sfxId => {
+        _sound!.playSingle(assetLibrary._getSfx(sfxId));
+      });
     }
   };
 
@@ -114,12 +124,11 @@ const createGameWindow = () => {
   const _initialize = async (): Promise<void> => {
     await AssetLibrary._preRenderTextures();
 
-    // playButton.addEventListener('click', _start); // DEV
+    playButton.addEventListener('click', _start);
 
     utils._wait(1).then(() => {
       playButton.style.display = 'block';
       _onResize();
-      _start(); // DEV
     });
   }
 
@@ -127,36 +136,12 @@ const createGameWindow = () => {
     playButton.style.display = 'none';
 
     const audioCtx = new window.AudioContext();
-    _music = createMiniSequencer(audioCtx);
-    _sfx = createMiniSequencer(audioCtx);
+    _sound = createMiniSequencer(audioCtx);
 
     if (window.matchMedia("(pointer: coarse)").matches) {
       const doc = document.documentElement;
       doc.requestFullscreen();
     }
-
-    // _music.playLoop({
-    //   bpm: 180,
-    //   bass: [
-    //     0, 1, 0, 0,
-    //     1, 0, 0, 0,
-    //     0, 0, 0, 0,
-    //     1, 0, 0, 0,
-    //   ],
-    //   snare: [
-    //     0, 0, 1, 0,
-    //     0, 0, 1, 0,
-    //   ],
-    //   chords: [
-    //     1, 0, 0, 0,
-    //     0, 0, 0, 0,
-    //     1, 0, 1, 0,
-    //   ],
-    //   kick: [
-    //     1, 0, 0, 0,
-    //     0, 1, 0, 0,
-    //   ],
-    // });
 
     _renderer = createRenderer(_canvas);
     _requestNewFrame(new Float32Array(MAX_SPRITE_COUNT * FLOATS_PER_INSTANCE));
