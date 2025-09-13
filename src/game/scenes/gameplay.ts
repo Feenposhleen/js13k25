@@ -3,6 +3,7 @@ import { utils } from "../../core/utils";
 import { LevelData } from "../state";
 import { createInterstitial } from "./interstitial";
 import { createGameplayLevel } from "./level";
+import { createWellDone } from "./well_done";
 
 export const level1 = {
   _wandAvailable: false,
@@ -42,7 +43,7 @@ export const level5 = {
 export const level6 = {
   _wandAvailable: true,
   _swatterAvailable: true,
-  _flySpawnInterval: 4,
+  _flySpawnInterval: 6,
   _baseCrazyMod: 0.3
 } as LevelData;
 
@@ -73,4 +74,10 @@ export const createGameplayScene = () => createScene(async (scene, game) => {
       game._worker._popScene();
     }
   }
+
+  if (!cancelled) {
+    game._worker._popScene();
+  }
+
+  game._worker._pushScene(createWellDone());
 });
