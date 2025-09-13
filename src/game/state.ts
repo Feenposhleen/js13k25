@@ -1,6 +1,5 @@
 import assetLibrary from "../core/asset_library";
-import { Sprite } from "../core/sprite";
-import { utils, Vec } from "../core/utils";
+import { Vec } from "../core/utils";
 import { Slot } from "./objects/table_slots";
 
 export type LevelData = {
@@ -17,6 +16,7 @@ export type LevelState = {
   _crazyness: number;
   _placedItems: Map<Slot, boolean>;
   _flyPosition: Vec | null;
+  _done: boolean;
 }
 
 export const placeables = {

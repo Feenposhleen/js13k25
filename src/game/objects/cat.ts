@@ -40,14 +40,18 @@ export const createCat = (levelData: LevelData) => {
   ])
     .then(() => utils._wait(1 + utils._rndFloat() * 2))
     .then(() => {
-      if (game._state._levelState!._crazyness > 0.5) {
+      if (game._state._levelState!._crazyness > 0.5 && !game._state._levelState!._done) {
         return utils._tweenUpdater(catPawSprite, createAttackUpdater(toTheLeft), 0.4, (game) => {
+          if (game._state._levelState!._done) return;
+
           for (const slot of slots) {
             if (game._state._levelState!._placedItems.get(slot) && ((toTheLeft && slot._position[0] < 0.5) || (!toTheLeft && slot._position[0] >= 0.5))) {
               game._state._levelState!._placedItems.set(slot, false);
             }
           }
-        }).then(() => { game._state._levelState!._crazyness = utils._clamp(game._state._levelState!._crazyness - 0.4, 0, 1); });;
+        }).then(() => {
+          game._state._levelState!._crazyness = utils._clamp(game._state._levelState!._crazyness - 0.4, 0, 1);
+        });
       }
 
       return Promise.resolve();

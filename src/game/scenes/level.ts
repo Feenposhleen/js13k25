@@ -21,6 +21,7 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
       _selectedItem: null,
       _dizzyness: 0.002,
       _crazyness: 0,
+      _done: false,
       _placedItems: new Map(),
     };
 
@@ -68,6 +69,7 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     const allPlaced = slots.every(s => game._state._levelState!._placedItems.get(s));
 
     if (allPlaced) {
+      game._state._levelState!._done = true;
       completed = true;
     }
 

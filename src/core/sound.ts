@@ -1,21 +1,23 @@
 import { utils } from "./utils";
 
 export type PlayOptions = {
-  _bpm: number;
   _octave?: number;
   _bass?: number[];
   _chords?: number[];
   _snare?: number[];
   _kick?: number[];
+  _beep?: number[];
+  _boop?: number[];
 };
 
 type PlayOptionsHard = {
-  _bpm: number;
   _octave: number;
   _bass: number[];
   _chords: number[];
   _snare: number[];
   _kick: number[];
+  _beep: number[];
+  _boop: number[];
 };
 
 const createMiniSequencer = (ctxArg?: AudioContext) => {
@@ -76,13 +78,13 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   // /---
 
   const _snare = (t: number) => {
-    const o = _createOscillator(t, "square", 200);
-    const g = _createGain(t, 0.002, 0.15, 0.2);
+    const o = _createOscillator(t, "square", _freqFromDegree(2, 2));
+    const g = _createGain(t, 0.002, 0.15, 0.1);
 
-    o.frequency.exponentialRampToValueAtTime(40 + ((_step % _steps) * 5), t + 0.12);
+    o.frequency.exponentialRampToValueAtTime(60 + ((_step % 8) * 4), t + 0.1);
 
     _chain([o, g, _ctx.destination]);
-    _startAndStop(o, t, t + 0.2);
+    _startAndStop(o, t, t + 0.1);
   };
 
   const _kick = (t: number) => {
@@ -93,26 +95,44 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     _startAndStop(o, t, t + 0.1);
   };
 
-  const _bass = (t: number, deg: number, octave: number) => {
-    const o = _createOscillator(t, "sawtooth", _freqFromDegree(deg, octave - 1));
-    const f = _createBiquadFilter(t, "lowpass", 500);
+  const _bass = (t: number, octave: number) => {
+    const o = _createOscillator(t, "sawtooth", _freqFromDegree(_step % 16, octave - 1));
+    const f = _createBiquadFilter(t, "lowpass", 600);
+    const g = _createGain(t, 0.01, 0.6)
+
+    _chain([o, f, g, _ctx.destination]);
+    _startAndStop(o, t, t + 0.6);
+  };
+
+  const _beep = (t: number, octave: number) => {
+    const o = _createOscillator(t, "sawtooth", _freqFromDegree(0, octave + 1));
+    const f = _createBiquadFilter(t, "lowpass", 800);
+    const g = _createGain(t, 0.01, 0.5)
+
+    _chain([o, f, g, _ctx.destination]);
+    _startAndStop(o, t, t + 0.5);
+  };
+
+  const _boop = (t: number, octave: number) => {
+    const o = _createOscillator(t, "sawtooth", _freqFromDegree(0, octave));
+    const f = _createBiquadFilter(t, "lowpass", 900);
     const g = _createGain(t, 0.01, 0.4)
 
     _chain([o, f, g, _ctx.destination]);
     _startAndStop(o, t, t + 0.5);
   };
 
-  const _chord = (t: number, deg: number, octave: number) => {
-    const degrees = [deg, deg + 2, deg + 4];
+  const _chord = (t: number, octave: number) => {
+    const degrees = [0, 2, 4];
 
-    const g = _createGain(t, 0.04, 1, 0.05);
+    const g = _createGain(t, 0.04, 1.2, 0.06);
     _chain([g, _ctx.destination]);
 
     degrees.forEach((d, i) => {
-      const o = _createOscillator(t, "triangle", _freqFromDegree(d, octave + 1));
-      o.detune.setValueAtTime((i - 1) * 4, t);
+      const o = _createOscillator(t, "sine", _freqFromDegree(d, 2 + Math.round((_step % 8) / 2)));
+      o.detune.setValueAtTime(i + 2, t);
       _chain([o, g]);
-      _startAndStop(o, t, t + 1);
+      _startAndStop(o, t, t + 1.2);
     });
   };
 
@@ -121,13 +141,13 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     while (_nextTime < _ctx.currentTime + _lookahead) {
       const i = _step % _steps;
       const t = _nextTime;
-      const d = i;
-      const { _octave: octave, _bass: bass, _chords: chords, _snare: snare, _kick: kick } = _opts;
 
-      if (kick[i % kick.length]) _kick(t);
-      if (snare[i % snare.length]) _snare(t);
-      if (bass[i % bass.length]) _bass(t, d, octave);
-      if (chords[i % chords.length]) _chord(t, d, octave);
+      if (_opts._kick[i % _opts._kick.length]) _kick(t);
+      if (_opts._snare[i % _opts._snare.length]) _snare(t);
+      if (_opts._bass[i % _opts._bass.length]) _bass(t, _opts._octave);
+      if (_opts._beep[i % _opts._bass.length]) _beep(t, _opts._octave);
+      if (_opts._boop[i % _opts._bass.length]) _boop(t, _opts._octave);
+      if (_opts._chords[i % _opts._chords.length]) _chord(t, _opts._octave);
 
       _nextTime += _stepDur;
       _step++;
@@ -135,12 +155,13 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   };
 
   const toHardOpts = (playOpts: PlayOptions): PlayOptionsHard => ({
-    _bpm: playOpts._bpm,
     _octave: playOpts._octave || 1,
     _bass: playOpts._bass || [],
     _chords: playOpts._chords || [],
     _snare: playOpts._snare || [],
     _kick: playOpts._kick || [],
+    _beep: playOpts._beep || [],
+    _boop: playOpts._beep || [],
   });
 
   const playSingle = (playOpts: PlayOptions) => {
@@ -150,8 +171,8 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
 
     if (opts._kick[0]) _kick(t);
     if (opts._snare[0]) _snare(t);
-    if (opts._bass[0]) _bass(t, d, opts._octave);
-    if (opts._chords[0]) _chord(t, d, opts._octave);
+    if (opts._bass[0]) _bass(t, opts._octave);
+    if (opts._chords[0]) _chord(t, opts._octave);
   }
 
   const playLoop = (playOpts: PlayOptions) => {
@@ -165,14 +186,12 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
       8,
     );
 
-    const spb = 60 / _opts._bpm;
+    const spb = 60 / 164;
     _stepDur = spb / 2;
 
-    if (_timer) clearInterval(_timer);
-    _step = 0;
-    _nextTime = _ctx.currentTime + 0.05;
-
-    _timer = window.setInterval(() => _schedule(), 25);
+    if (!_timer) {
+      _timer = window.setInterval(() => _schedule(), 25);
+    }
   };
 
   const stop = () => {

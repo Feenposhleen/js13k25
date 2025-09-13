@@ -72,7 +72,6 @@ const assetLibrary = {
     switch (id) {
       case 1:
         return {
-          _bpm: 120,
           _bass: [
             0, 1, 0, 0,
             1, 0, 0, 0,
@@ -87,16 +86,64 @@ const assetLibrary = {
             1, 0, 0, 0,
             0, 0, 0, 0,
             1, 0, 1, 0,
+            0, 0, 0, 0,
+            1, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 0, 1, 0,
+            0, 0, 0, 0,
           ],
           _kick: [
             1, 0, 0, 0,
             0, 1, 0, 0,
           ],
         };
-      default:
+      case 2:
         return {
-          _bpm: 120,
+          _bass: [
+            0, 1, 0, 0,
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            1, 0, 0, 0,
+          ],
+          _snare: [
+            1, 0, 1, 0,
+            1, 0, 1, 0,
+          ],
+          _chords: [
+            1, 0, 0, 0,
+            0, 0, 1, 0,
+            1, 0, 1, 0,
+          ],
+          _kick: [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+          ],
         };
+      case 3:
+        return {
+          _snare: [
+            0, 0, 1, 0,
+            0, 0, 1, 0,
+          ],
+          _kick: [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+          ],
+        };
+      case 4:
+        return {
+          _snare: [
+            1, 0, 1, 0,
+            1, 0, 1, 0,
+          ],
+          _kick: [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+          ],
+
+        };
+      default:
+        return {};
     }
   },
 
@@ -104,14 +151,16 @@ const assetLibrary = {
     switch (id) {
       case 1:
         return {
-          _bpm: 120,
-          _bass: [1],
+          _beep: [1],
+          _octave: 2,
+        };
+      case 2:
+        return {
+          _boop: [1],
           _octave: 2,
         };
       default:
-        return {
-          _bpm: 120,
-        };
+        return {};
     }
   },
 };

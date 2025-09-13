@@ -47,11 +47,12 @@ export const level6 = {
 } as LevelData;
 
 export const createGameplayScene = () => createScene(async (scene, game) => {
-  game._worker._setMusic(1)
+  game._worker._setMusic(2)
   let cancelled = false;
 
   for (const levelData of [level1, level2, level3, level4, level5, level6]) {
     if (cancelled) break;
+    game._worker._setMusic((levelData === level5 || levelData === level6) ? 4 : 3)
     await new Promise(res => {
       const level = createInterstitial(levelData, res as VoidFunction);
       game._worker._pushScene(level);
@@ -62,6 +63,7 @@ export const createGameplayScene = () => createScene(async (scene, game) => {
     }
 
     if (cancelled) break;
+    game._worker._setMusic((levelData === level5 || levelData === level6) ? 2 : 1)
     await new Promise(res => {
       const level = createGameplayLevel(levelData, res as VoidFunction);
       game._worker._pushScene(level);

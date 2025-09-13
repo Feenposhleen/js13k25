@@ -126,7 +126,7 @@ const createGameWindow = () => {
 
     playButton.addEventListener('click', _start);
 
-    utils._wait(1).then(() => {
+    utils._wait(0).then(() => {
       playButton.style.display = 'block';
       _onResize();
     });
@@ -137,6 +137,10 @@ const createGameWindow = () => {
 
     const audioCtx = new window.AudioContext();
     _sound = createMiniSequencer(audioCtx);
+
+    utils._wait(2).then(() => {
+      _onResize();
+    });
 
     if (window.matchMedia("(pointer: coarse)").matches) {
       const doc = document.documentElement;
