@@ -7,42 +7,42 @@ import { createGameplayLevel } from "./level";
 export const level1 = {
   _wandAvailable: false,
   _swatterAvailable: false,
-  _flySpawnRate: 0,
+  _flySpawnInterval: 0,
   _baseCrazyMod: 0,
 } as LevelData;
 
 export const level2 = {
   _wandAvailable: false,
   _swatterAvailable: false,
-  _flySpawnRate: 0,
+  _flySpawnInterval: 0,
   _baseCrazyMod: 0.1
 } as LevelData;
 
 export const level3 = {
   _wandAvailable: true,
   _swatterAvailable: false,
-  _flySpawnRate: 0,
+  _flySpawnInterval: 0,
   _baseCrazyMod: 0.2
 } as LevelData;
 
 export const level4 = {
   _wandAvailable: false,
   _swatterAvailable: true,
-  _flySpawnRate: 0.1,
-  _baseCrazyMod: 0.1
+  _flySpawnInterval: 2,
+  _baseCrazyMod: 0.05
 } as LevelData;
 
 export const level5 = {
   _wandAvailable: true,
   _swatterAvailable: true,
-  _flySpawnRate: 0.1,
+  _flySpawnInterval: 6,
   _baseCrazyMod: 0.2
 } as LevelData;
 
 export const level6 = {
   _wandAvailable: true,
   _swatterAvailable: true,
-  _flySpawnRate: 0.2,
+  _flySpawnInterval: 4,
   _baseCrazyMod: 0.3
 } as LevelData;
 

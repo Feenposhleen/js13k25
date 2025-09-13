@@ -6,6 +6,7 @@ import { getClosestFreeSlot } from "./table_slots";
 
 export const createSelected = (): Sprite => {
   var lastSelected: string | null = null;
+  var lastPosition: Vec = [0, 0];
   const base = createSprite(null, [0, 0]);
 
   const hintSprite = createSprite(null, [0.45, -0.33], [0.35, 0.35]);
@@ -69,6 +70,13 @@ export const createSelected = (): Sprite => {
         hintSprite._texture = null;
       }
     }
+
+    if (selectedItemSprite._texture === assetLibrary._textures._pickup_wand) {
+      const cursorDistance = utils._simpleDistance(selectedItemSprite._position, lastPosition);
+      game._state._levelState!._crazyness -= cursorDistance * 0.1;
+    }
+
+    lastPosition = [...selectedItemSprite._position] as Vec;
   };
 
   base._addChild(hintSprite);

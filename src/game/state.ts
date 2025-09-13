@@ -6,7 +6,7 @@ import { Slot } from "./objects/table_slots";
 export type LevelData = {
   _wandAvailable: boolean;
   _swatterAvailable: boolean;
-  _flySpawnRate: number;
+  _flySpawnInterval: number;
   _baseCrazyMod: number
 }
 
@@ -16,6 +16,7 @@ export type LevelState = {
   _dizzyness: number;
   _crazyness: number;
   _placedItems: Map<Slot, boolean>;
+  _flyPosition: Vec | null;
 }
 
 export const placeables = {

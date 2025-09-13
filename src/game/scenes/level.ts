@@ -4,6 +4,7 @@ import createSprite from "../../core/sprite";
 import { utils } from "../../core/utils";
 import { createCat } from "../objects/cat";
 import { createCrazyBar } from "../objects/crazy_bar";
+import { flySpawner } from "../objects/fly";
 import { createRoom } from "../objects/room";
 import { createSelectables } from "../objects/selectables";
 import { createSelected } from "../objects/selected";
@@ -16,6 +17,7 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
   const scene = createScene((scene, game) => {
     game._state._levelState = {
       _levelData: levelData,
+      _flyPosition: null,
       _selectedItem: null,
       _dizzyness: 0.002,
       _crazyness: 0,
@@ -39,13 +41,19 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     scene._rootSprite._addChild(cat);
     scene._rootSprite._addChild(selectables);
     scene._rootSprite._addChild(selected);
-    scene._rootSprite._addChild(dim);
 
     if (levelData._baseCrazyMod > 0) {
       const crazyBar = createCrazyBar();
       crazyBar._position = [0.5, 0.1];
       scene._rootSprite._addChild(crazyBar);
     }
+
+    if (levelData._flySpawnInterval > 0) {
+      const spawner = flySpawner();
+      scene._rootSprite._addChild(spawner);
+    }
+
+    scene._rootSprite._addChild(dim);
   });
 
   let completed = false;

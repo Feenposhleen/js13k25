@@ -5,12 +5,7 @@ import { utils } from "../../core/utils";
 export const createCrazyBar = (): Sprite => {
   const crazyBar = createSprite(null, [0, 0]);
   crazyBar._updater = (sprite, game, delta) => {
-    let crazyMod = 0.05;
-    if (game._state._levelState!._selectedItem == '_wand') {
-      crazyMod = -0.1;
-    }
-
-    game._state._levelState!._crazyness = utils._clamp(game._state._levelState!._crazyness + (delta * game._state._levelState!._levelData._baseCrazyMod * 10 * crazyMod), 0, 1);
+    game._state._levelState!._crazyness = utils._clamp(game._state._levelState!._crazyness + (delta * game._state._levelState!._levelData._baseCrazyMod * 0.2), 0, 1);
   }
 
   const bgSprite = createSprite(assetLibrary._textures._ui_grey_square, [0, 0], [0.8, 0.1]);

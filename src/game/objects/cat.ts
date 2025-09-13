@@ -65,6 +65,10 @@ export const createCat = (levelData: LevelData) => {
     if (game._state._levelState!._crazyness > 0.5 && !ongoingAttack) {
       ongoingAttack = attackCycle(utils._rndBool(), game)
     }
+
+    if (game._state._levelState?._flyPosition !== null) {
+      catHead._lookAt(game._state._levelState!._flyPosition);
+    }
   };
 
   catBodySprite._addChild(catPawSprite);

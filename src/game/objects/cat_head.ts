@@ -26,10 +26,10 @@ export const createCatHead = (parentSprite: Sprite, levelData: LevelData) => {
       1,
     );
 
-
     eyeSprite._updater = (sprite, game, __) => {
       const blink = (utils._sin(game._worker._ticks * 1.5) + 1) / 2;
-      sprite._scale[1] = 0.12 * (blink > 0.98 ? 0.1 : 1);
+      sprite._scale[0] = (0.12 * mult) * (game._state._levelState?._flyPosition ? 1.2 : 1);
+      sprite._scale[1] = 0.12 * (blink > 0.98 ? 0.1 : game._state._levelState?._flyPosition ? 1.4 : 1);
     };
 
     const pupilSprite = createSprite(
