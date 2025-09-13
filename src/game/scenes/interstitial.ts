@@ -5,10 +5,10 @@ import { utils, Vec } from "../../core/utils";
 import { LevelData } from "../state";
 import { level1, level2, level3, level4, level5, level6 } from "./gameplay";
 
-const levelIn: Vec = [0.42, 2.4];
+const levelIn: Vec = [1.42, -0.6];
 const levelTarget: Vec = [0.42, 0.5];
 
-const numberIn: Vec = [0.56, -0.6];
+const numberIn: Vec = [-.56, -1.6];
 const numberTarget: Vec = [0.56, 0.5];
 
 export const createInterstitial = (level: LevelData, onCompleted: VoidFunction) => {
@@ -31,6 +31,7 @@ export const createInterstitial = (level: LevelData, onCompleted: VoidFunction) 
 
   const levelSprite = createSprite(assetLibrary._textures._text_level, levelIn, [0.5, 0.5]);
   levelSprite._updater = (sprite, game, delta) => {
+    sprite._angle = utils._cos(ticks * 3) * 0.02;
     if (ticks < 2) {
       sprite._position = utils._vectorLerp(levelIn, levelTarget, ticks / 2);
     } else if (ticks > 3) {
@@ -40,12 +41,16 @@ export const createInterstitial = (level: LevelData, onCompleted: VoidFunction) 
 
   const numberSprite = createSprite(levelMap.get(level)!, numberIn, [0.5, 0.5]);
   numberSprite._updater = (sprite, game, delta) => {
+    sprite._angle = utils._sin(ticks * 3) * 0.02;
     if (ticks < 2) {
       sprite._position = utils._vectorLerp(numberIn, numberTarget, ticks / 2);
     } else if (ticks > 3) {
       sprite._opacity = utils._max(0, 1 - (ticks - 3));
     }
   }
+
+  const bg = createSprite(assetLibrary._textures._ui_square_bg, [0.5, 0.5], [10, 10]);
+  scene._rootSprite._addChild(bg);
 
   scene._rootSprite._addChild(levelSprite);
   scene._rootSprite._addChild(numberSprite);

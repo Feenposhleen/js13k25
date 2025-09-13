@@ -1,4 +1,6 @@
+import assetLibrary from "../../core/asset_library";
 import createScene, { Scene } from "../../core/scene";
+import createSprite from "../../core/sprite";
 import { utils } from "../../core/utils";
 import { createCat } from "../objects/cat";
 import { createCrazyBar } from "../objects/crazy_bar";
@@ -9,6 +11,8 @@ import { createTableSlots, Slot, slots } from "../objects/table_slots";
 import { LevelData, placeables } from "../state";
 
 export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunction) => {
+  const dim = createSprite(assetLibrary._textures._ui_square_bg, [0.5, 0.5], [10, 10]);
+
   const scene = createScene((scene, game) => {
     game._state._levelState = {
       _levelData: levelData,
@@ -28,8 +32,6 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     cat._scale = [0.5, 0.5];
 
     const tableSlots = createTableSlots();
-
-
     const selected = createSelected();
 
     scene._rootSprite._addChild(room);
@@ -37,6 +39,7 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     scene._rootSprite._addChild(cat);
     scene._rootSprite._addChild(selectables);
     scene._rootSprite._addChild(selected);
+    scene._rootSprite._addChild(dim);
 
     if (levelData._baseCrazyMod > 0) {
       const crazyBar = createCrazyBar();
@@ -45,11 +48,27 @@ export const createGameplayLevel = (levelData: LevelData, onCompleted: VoidFunct
     }
   });
 
+  let completed = false;
+  let completedTicks = 0;
+  let ticks = 0;
   scene._updater = (scene, game, delta) => {
+    ticks += delta;
+    if (ticks < 1) {
+      dim._opacity = utils._clamp(1 - ticks, 0, 1);
+    }
+
     const allPlaced = slots.every(s => game._state._levelState!._placedItems.get(s));
 
     if (allPlaced) {
-      onCompleted();
+      completed = true;
+    }
+
+    if (completed) {
+      completedTicks += delta;
+      dim._opacity = utils._clamp(completedTicks - 1, 0, 1);
+      if (completedTicks > 2) {
+        onCompleted();
+      }
     }
   };
 
