@@ -8,6 +8,7 @@ export type PlayOptions = {
   _kick?: number[];
   _beep?: number[];
   _boop?: number[];
+  _bang?: number[];
 };
 
 type PlayOptionsHard = {
@@ -18,6 +19,7 @@ type PlayOptionsHard = {
   _kick: number[];
   _beep: number[];
   _boop: number[];
+  _bang: number[];
 };
 
 const createMiniSequencer = (ctxArg?: AudioContext) => {
@@ -88,11 +90,12 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   };
 
   const _kick = (t: number) => {
-    const o = _createOscillator(t, "sine", 120);
-    const g = _createGain(t, 0.002, 0.1, 0.5);
+    const o = _createOscillator(t, "sine", _freqFromDegree(2, 1));
+    const f = _createBiquadFilter(t, "lowpass", 900);
+    const g = _createGain(t, 0.002, 0.2);
 
-    _chain([o, g, _ctx.destination]);
-    _startAndStop(o, t, t + 0.1);
+    _chain([o, f, g, _ctx.destination]);
+    _startAndStop(o, t, t + 0.2);
   };
 
   const _bass = (t: number, octave: number) => {
@@ -105,21 +108,27 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
   };
 
   const _beep = (t: number, octave: number) => {
-    const o = _createOscillator(t, "sawtooth", _freqFromDegree(0, octave + 1));
-    const f = _createBiquadFilter(t, "lowpass", 800);
-    const g = _createGain(t, 0.01, 0.5)
+    const o = _createOscillator(t, "sine", _freqFromDegree(4, octave + 1));
+    const g = _createGain(t, 0.04, 0.6)
 
-    _chain([o, f, g, _ctx.destination]);
-    _startAndStop(o, t, t + 0.5);
+    _chain([o, g, _ctx.destination]);
+    _startAndStop(o, t, t + 0.6);
   };
 
   const _boop = (t: number, octave: number) => {
-    const o = _createOscillator(t, "sawtooth", _freqFromDegree(0, octave));
-    const f = _createBiquadFilter(t, "lowpass", 900);
-    const g = _createGain(t, 0.01, 0.4)
+    const o = _createOscillator(t, "triangle", _freqFromDegree(2, octave));
+    const g = _createGain(t, 0.04, 0.2)
 
-    _chain([o, f, g, _ctx.destination]);
-    _startAndStop(o, t, t + 0.5);
+    _chain([o, g, _ctx.destination]);
+    _startAndStop(o, t, t + 0.2);
+  };
+
+  const _bang = (t: number, octave: number) => {
+    const o = _createOscillator(t, "sawtooth", _freqFromDegree(4, octave - 1));
+    const g = _createGain(t, 0.04, 2, 0.3)
+
+    _chain([o, g, _ctx.destination]);
+    _startAndStop(o, t, t + 2);
   };
 
   const _chord = (t: number, octave: number) => {
@@ -145,8 +154,9 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
       if (_opts._kick[i % _opts._kick.length]) _kick(t);
       if (_opts._snare[i % _opts._snare.length]) _snare(t);
       if (_opts._bass[i % _opts._bass.length]) _bass(t, _opts._octave);
-      if (_opts._beep[i % _opts._bass.length]) _beep(t, _opts._octave);
-      if (_opts._boop[i % _opts._bass.length]) _boop(t, _opts._octave);
+      if (_opts._beep[i % _opts._beep.length]) _beep(t, _opts._octave);
+      if (_opts._boop[i % _opts._boop.length]) _boop(t, _opts._octave);
+      if (_opts._bang[i % _opts._bang.length]) _bang(t, _opts._octave);
       if (_opts._chords[i % _opts._chords.length]) _chord(t, _opts._octave);
 
       _nextTime += _stepDur;
@@ -161,7 +171,8 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     _snare: playOpts._snare || [],
     _kick: playOpts._kick || [],
     _beep: playOpts._beep || [],
-    _boop: playOpts._beep || [],
+    _boop: playOpts._boop || [],
+    _bang: playOpts._bang || [],
   });
 
   const playSingle = (playOpts: PlayOptions) => {
@@ -173,6 +184,9 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
     if (opts._snare[0]) _snare(t);
     if (opts._bass[0]) _bass(t, opts._octave);
     if (opts._chords[0]) _chord(t, opts._octave);
+    if (opts._beep[0]) _beep(t, opts._octave);
+    if (opts._boop[0]) _boop(t, opts._octave);
+    if (opts._bang[0]) _bang(t, opts._octave);
   }
 
   const playLoop = (playOpts: PlayOptions) => {
@@ -183,6 +197,9 @@ const createMiniSequencer = (ctxArg?: AudioContext) => {
       _opts._chords.length,
       _opts._snare.length,
       _opts._kick.length,
+      _opts._beep.length,
+      _opts._boop.length,
+      _opts._bang.length,
       8,
     );
 

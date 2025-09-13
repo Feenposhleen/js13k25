@@ -49,6 +49,7 @@ export const createCat = (levelData: LevelData) => {
               game._state._levelState!._placedItems.set(slot, false);
             }
           }
+          game._worker._playSfx(3);
         }).then(() => {
           game._state._levelState!._crazyness = utils._clamp(game._state._levelState!._crazyness - 0.4, 0, 1);
         });

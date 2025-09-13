@@ -100,9 +100,13 @@ const assetLibrary = {
       case 2:
         return {
           _bass: [
-            0, 1, 0, 0,
+            0, 1, 1, 0,
             1, 0, 0, 0,
-            0, 1, 0, 0,
+            0, 0, 1, 0,
+            1, 0, 0, 0,
+            0, 1, 1, 0,
+            1, 0, 1, 0,
+            1, 0, 0, 0,
             1, 0, 0, 0,
           ],
           _snare: [
@@ -111,8 +115,13 @@ const assetLibrary = {
           ],
           _chords: [
             1, 0, 0, 0,
-            0, 0, 1, 0,
+            0, 0, 0, 0,
             1, 0, 1, 0,
+            0, 0, 0, 0,
+            1, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 0, 1, 0,
+            0, 0, 0, 0,
           ],
           _kick: [
             1, 0, 0, 0,
@@ -157,6 +166,11 @@ const assetLibrary = {
       case 2:
         return {
           _boop: [1],
+          _octave: 2,
+        };
+      case 3:
+        return {
+          _bang: [1],
           _octave: 2,
         };
       default:
